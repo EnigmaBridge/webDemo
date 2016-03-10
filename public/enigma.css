@@ -1,0 +1,26 @@
+.logbox {
+    padding: 10px 10px 10px 10px;
+    font-family: monospace;
+    margin-top: 10px;
+    margin-right: 10px;
+    overflow: auto;
+    width: 99%;
+    white-space: pre-wrap;       /* CSS 3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.logbox2 {
+    padding: 10px 10px 10px 10px;
+    font-family: monospace;
+    margin-top: 10px;
+    margin-right: 10px;
+    overflow: auto;
+    width: 99%;
+    white-space: pre-wrap;       /* CSS 3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+

@@ -10,6 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" href="./css/animate.css" />
+	<link rel="stylesheet" href="enigma.css" />
 	<script src="./js/jquery-2.1.0.js"></script>
 	<script src="./js/bootstrap.js"></script>
 	<script src="./js/blocs.js"></script><link rel='stylesheet' href='./css/font-awesome.min.css'/>
@@ -22,7 +23,9 @@
 <body>
 <!-- Main container -->
 <div class="page-container">
-    <!-- Hero Bloc --><div id="hero-bloc" class="bloc hero bgc-white bg-bigstock-Future-technology-Touch-butto-99366956-min-bright d-bloc">
+    
+<!-- Hero Bloc -->
+<div id="hero-bloc" class="bloc hero bgc-white bg-bigstock-Future-technology-Touch-butto-99366956-min-bright d-bloc">
 	<div class="container bloc-sm hero-nav">
 		<nav class="navbar row">
 			<div class="navbar-header">
@@ -59,7 +62,11 @@
 			</div>
 		</div><a id="scroll-hero" class="btn-dwn" href="#"><span class="fa fa-chevron-down"></span></a>
 	</div>
-</div><!-- Hero Bloc END --><!-- encrypt --><div class="bloc l-bloc bgc-white" id="encrypt">
+</div>
+<!-- Hero Bloc END -->
+
+<!-- encrypt -->
+<div class="bloc l-bloc bgc-white" id="encrypt">
 	<div class="container bloc-lg">
 		<div class="row">
 			<div class="col-sm-6">
@@ -73,30 +80,29 @@
 					<button class="bloc-button btn  pull-right btn-rich-electric-blue btn-clean" type="submit">
 						Send Request
 					</button>
-					<div class="form-group">
-						<label>
-							Label
-						</label>
-					</div>
-					<div class="divider-h">
-						<span class="divider"></span>
-					</div>
-					<div class="divider-h">
-						<span class="divider"></span>
-					</div>
 				</form>
+				<br/>
+				<div class="mg-md">
+					<h4 class="mg-md">
+						Status
+					</h4>
+					<div id="status" class="logbox2"></div>
+				</div>
 			</div>
 			<div class="col-sm-6">
 				<h3 class="mg-md">
 					Request for Enigma Bridge
 				</h3>
-				<p>
-					Value set by JavaScript according to the form on the left
-				</p>
+				<div id="request" class="logbox2"></div>
 			</div>
 		</div>
+
 	</div>
-</div><!-- encrypt END --><!-- bloc-3 --><div class="bloc bgc-rich-electric-blue d-bloc" id="bloc-3">
+</div>
+<!-- encrypt END -->
+
+<!-- bloc-3 -->
+<div class="bloc bgc-rich-electric-blue d-bloc" id="bloc-3">
 	<div class="container bloc-lg">
 		<div class="row">
 			<div class="col-sm-4">
@@ -134,7 +140,8 @@
 			</div>
 		</div>
 	</div>
-</div><!-- bloc-3 END -->
+</div>
+<!-- bloc-3 END -->
 </div>
 <!-- Main container END -->
 
