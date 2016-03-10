@@ -82,6 +82,7 @@ function requestSimple(dataInp, doPadding){
 	// Callbacks settings.
 	request.done(function(response, requestObj, jqXHR) {
 		console.log("DONE! " + h.fromBits(response.protectedData));
+		$('#data_encrypted').val(h.fromBits(response.protectedData));
 
 	}).fail(function(failType, jqXHR, textStatus, errorThrown, requestObj){
 		console.log("fail! type=" + failType);
