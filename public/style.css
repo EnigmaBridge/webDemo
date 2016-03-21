@@ -157,6 +157,12 @@ a{
 	border-color:rgba(0,0,0,.3);
 }
 
+/* Row Margin Offsets */
+
+.voffset{
+	margin-top:30px;
+}
+
 /* Bloc text custom styling */
 
 #hero-bloc h1{
@@ -164,6 +170,9 @@ a{
 }
 #hero-bloc h3{
 	font-size:30px;
+}
+#bloc-4 p{
+	line-height: 18px;
 }
 
 /* = NavBar
@@ -308,6 +317,13 @@ nav .caret{
 /* = Bric adjustment margins
 -------------------------------------------------------------- */
 
+.mg-clear{
+	margin:0;
+}
+.mg-sm{
+	margin-top:10px;
+	margin-bottom:5px;
+}
 .mg-md{
 	margin-top:10px;
 	margin-bottom:20px;
@@ -346,6 +362,18 @@ button{
 	padding: 16px 40px;
 	font-size: 28px;
 }
+.a-btn{
+	padding: 6px 10px 6px 0;
+	line-height: 1.42857143;
+	display:inline-block;
+}
+.text-center .a-btn{
+	padding: 6px 0;
+}
+.a-block{
+	width:100%;
+	text-align: left;
+}
 .dropdown a .caret{
 	margin:0 0 0 5px}
 /* = Icons
@@ -370,6 +398,25 @@ button{
 	min-width: 162px;
 }
 
+/* Image Frame */
+.img-frame,.img-frame-md,.img-frame-lg,.img-frame-rd,.img-frame-rd-md,.img-frame-rd-lg{
+	background:#FFF;
+	border:1px solid rgba(0,0,0,0.1);
+	box-shadow:0 2px 2px rgba(0,0,0,0.05);
+	padding:4px;
+}
+.img-frame{
+	border-radius:3px;
+}
+.img-frame-md,.img-frame-lg{
+	border-radius:6px;
+}
+.img-frame-md,.img-frame-rd-md{
+	padding:8px;
+}
+.img-frame-lg,.img-frame-rd-lg{
+	padding:14px;
+}
 
 
 
@@ -436,6 +483,11 @@ iframe{
 .tc-rich-electric-blue{
 	color:#00A7D6!important;
 }
+.tc-outer-space{
+	color:#47454B!important;
+	!important}.tc-isabelline{
+	color:#ECEEEF!important;
+}
 /* Button colour styles */
 
 .btn-rich-electric-blue{
@@ -453,12 +505,6 @@ iframe{
 }
 .ltc-rich-electric-blue:hover{
 	color:#0086ab!important;
-}
-.ltc-black{
-	color:#000000!important;
-}
-.ltc-black:hover{
-	color:#000000!important;
 }
 
 /* Bloc image backgrounds */
@@ -498,6 +544,18 @@ iframe{
 }
 .bg-s3x-0769-911-small{
 	background-image:url("img/s3x-0769-911_small.jpg?timestamp=1451753419692");
+}
+.bg-bigstock-Future-technology-Touch-butto-99366956-min-bright{
+	background-image:url('img/bigstock-Future-technology-Touch-butto-99366956-min_bright.jpg');
+}
+.bg-bigstock-Future-technology-Touch-butto-99366956-min-bright{
+	background-image:url('img/bigstock-Future-technology-Touch-butto-99366956-min_bright.jpg?timestamp=1458567367197');
+}
+.bg-bigstock-Future-technology-Touch-butto-99366956-min-bright{
+	background-image:url('img/bigstock-Future-technology-Touch-butto-99366956-min_bright.jpg');
+}
+.bg-bigstock-Future-technology-Touch-butto-99366956-min-bright{
+	background-image:url('img/bigstock-Future-technology-Touch-butto-99366956-min_bright.jpg?timestamp=1458567472743');
 }
 
 

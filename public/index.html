@@ -10,22 +10,17 @@
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" href="./css/animate.css" />
-	<link rel="stylesheet" href="enigma.css" />
 	<script src="./js/jquery-2.1.0.js"></script>
 	<script src="./js/bootstrap.js"></script>
 	<script src="./js/blocs.js"></script><link rel='stylesheet' href='./css/font-awesome.min.css'/>
-
-	<script src='./enigma.combined.js'></script>
-	<script src='./js/jqBootstrapValidation.js'></script>
+    <script src='./js/jqBootstrapValidation.js'></script>
 	<script src='./js/formHandler.js'></script>
     <title>Enigma Bridge - Scalable Hardware Encryption for Cloud</title>
 </head>
 <body>
 <!-- Main container -->
 <div class="page-container">
-    
-<!-- Hero Bloc -->
-<div id="hero-bloc" class="bloc hero bgc-white bg-bigstock-Future-technology-Touch-butto-99366956-min-bright d-bloc">
+    <!-- Hero Bloc --><div id="hero-bloc" class="bloc hero bgc-white bg-bigstock-Future-technology-Touch-butto-99366956-min-bright d-bloc">
 	<div class="container bloc-sm hero-nav">
 		<nav class="navbar row">
 			<div class="navbar-header">
@@ -37,7 +32,13 @@
 			<div class="collapse navbar-collapse navbar-1">
 				<ul class="site-navigation nav navbar-nav">
 					<li>
-						<a href="index.html" class="fadeInDown animDelay1 animated ltc-black">Home</a>
+						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" id="pl-undefined" onclick="scrollToTarget('#generalcrypto')">Encryption</a>
+					</li>
+					<li>
+						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" href="index.html">Passwords &amp; OTP</a>
+					</li>
+					<li>
+						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" href="https://www.enigmabridge.com" id="pl-undefined">Main Website</a>
 					</li>
 					<li>
 					</li>
@@ -57,95 +58,337 @@
 					A Different Cloud Security with Secure Hardware
 				</h3>
 				<div class="text-center">
-					<a class="btn btn-clean  btn-rich-electric-blue btn-xl" onclick="scrollToTarget('#encrypt')">Start Testing</a>
+					<a class="btn btn-clean  btn-rich-electric-blue btn-xl" onclick="scrollToTarget('#generalcrypto')">Test Encryption</a>
 				</div>
 			</div>
 		</div><a id="scroll-hero" class="btn-dwn" href="#"><span class="fa fa-chevron-down"></span></a>
 	</div>
-</div>
-<!-- Hero Bloc END -->
-
-<!-- encrypt -->
-<div class="bloc l-bloc bgc-white" id="encrypt">
+</div><!-- Hero Bloc END --><!-- generalcrypto --><div class="bloc l-bloc bgc-white tc-outer-space" id="generalcrypto">
 	<div class="container bloc-lg">
 		<div class="row">
-			<div class="col-sm-6">
-				<form id="form-2464" novalidate>
-					<div class="form-group">
-						<label>
-							Data to encrypt
-						</label>
-						<input class="form-control" id="data_encrypt" data-validation-required-message="data_encrypt is required." maxlength="200" />
-						<br/><label>
-							Encrypted data
-						</label>
-						<input class="form-control" id="data_encrypted" maxlength="200" placeholder="Submit data to encrypt" readonly/>
+			<div class="col-sm-12">
+				<h2 class="mg-md tc-rich-electric-blue">
+					<strong>General Encryption Functions</strong>
+				</h2>
+				<p class="mg-md">
+					We have built this page to allow new users testing of Enigma Bridge service with a few basic cryptographic functions. Please select a function, data you want to process and a server for processing.<br /><br />Once you press the “Process” button, you will see the command that was actually sent to Enigma Bridge, a response latency, as well as the result.<br /><br />A detailed log of the last processing is also available further down on this page.
+				</p>
+				<div class="divider-h">
+					<span class="divider"></span>
+				</div>
+				<form id="general" novalidate>
+					<div class="row voffset">
+						<div class="col-sm-2">
+							<div class="form-group">
+								<label class="mg-clear">
+									Function
+								</label>
+							</div>
+							<p>
+							</p>
+							<div class="form-group">
+								<label>
+									Data encrypt
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioFunction" value="option1" id="aes256" />AES-256
+								</label>
+							</div>
+							<div class="form-group">
+								<label>
+									Data sign
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioFunction" value="option1" id="rsa1024" />RSA-1024
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioFunction" value="option1" id="rsa2048" />RSA-2048
+								</label>
+							</div>
+						</div>
+						<div class="col-sm-7">
+							<div class="form-group">
+								<label class="mg-clear">
+									Data to process
+								</label>
+							</div>
+							<p>
+							</p>
+							<div class="form-group">
+								<label>
+									Raw data
+								</label>
+								<input class="form-control" id="dataraw" data-validation-required-message="dataraw is required." placeholder="EnigmaTestVector" />
+							</div>
+							<div class="form-group">
+								<label>
+									Encoded data (hexadecimal)
+								</label>
+								<input class="form-control" id="datahex" data-validation-required-message="datahex is required." placeholder="456E69676D6154657374566563746F72" />
+							</div>
+							<div class="row">
+								<div class="col-sm-12">
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetaes" value="allzeroes" id="allzeroes" />all zeroes
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetaes" value="lowercasea" id="lowercasea" />letters ‘a'
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetaes" value="testvector" id="testvector" />&rsquo;EnigmaTestVector'
+										</label>
+									</div>
+								</div>
+							</div>
+							<div class="row voffset">
+								<div class="col-sm-12">
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa1024" value="testvector1k" id="testvector1k" />”EnigmaSign”, no padding
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa1024" value="lowercasea1k" id="lowercasea1k" />letters ‘a&rsquo;, PKCS#7
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa1024" value="enigma1k" id="enigma1k" />&rsquo;Enigma', PKCS#1.5
+										</label>
+									</div>
+								</div>
+							</div>
+							<div class="row voffset">
+								<div class="col-sm-12">
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa2048" value="testvector2k" id="testvector2k" />”EnigmaSign”, no padding
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa2048" value="lowercasea2k" id="lowercasea2k" />letters ‘a&rsquo;, PKCS#7
+										</label>
+									</div>
+									<div class="radio-inline">
+										<label>
+											<input type="radio" name="radiosetrsa2048" value="enigma2k" id="enigma2k" />&rsquo;Enigma&rsquo;, PKCS#1.5
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="form-group">
+								<label class="mg-clear">
+									Server connection
+								</label>
+							</div>
+							<p>
+							</p>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioServer" value="dragonfly" id="dragonfly" />http://dragonfly.smarthsm.net
+								</label>
+							</div>
+							<div class="radio">
+								<label>
+									<input type="radio" name="radioServer" value="damselfly" id="damselfly" />https://damselfly.smarthsm.net
+								</label>
+							</div>
+						</div>
 					</div>
-					<button class="bloc-button btn  pull-right btn-rich-electric-blue btn-clean" type="submit">
-						Send Request
+					<div class="divider-h">
+						<span class="divider"></span>
+					</div>
+					<button class="bloc-button btn btn-lg btn-rich-electric-blue btn-block" type="submit">
+						Process
 					</button>
+					<div class="form-group">
+						<label class="mg-sm">
+							Request sent to Enigma Bridge
+						</label><textarea class="form-control" rows="2" cols="50" id="request" data-validation-required-message="request is required." placeholder="POST RESTful request for selected parameters. The body is “application/json” ..."></textarea>
+					</div>
+					<div class="row">
+						<div class="col-sm-2">
+							<div class="form-group">
+								<label>
+									Response time
+								</label><textarea class="form-control" rows="3" cols="50" id="responsetime" data-validation-required-message="responsetime is required." placeholder="Time in ms ..."></textarea>
+							</div>
+						</div>
+						<div class="col-sm-5">
+							<div class="form-group">
+								<label>
+									Response encoded
+								</label><textarea class="form-control" rows="3" cols="50" id="responsehex" data-validation-required-message="responsehex is required."></textarea>
+							</div>
+						</div>
+						<div class="col-sm-5">
+							<div class="form-group">
+								<label>
+									Response raw
+								</label><textarea class="form-control" rows="3" cols="50" id="responseraw" data-validation-required-message="responseraw is required."></textarea>
+							</div>
+						</div>
+					</div>
 				</form>
-				<br/>
-				<div class="mg-md">
-					<h4 class="mg-md">
-						Status
-					</h4>
-					<div id="status" class="logbox2"></div>
+				<div class="divider-h">
+					<span class="divider divider-half"></span>
 				</div>
-			</div>
-			<div class="col-sm-6">
-				<h3 class="mg-md">
-					Request for Enigma Bridge
+				<h2 class="tc-rich-electric-blue mg-lg">
+					<strong>Enigma Bridge - How It Works</strong>
+				</h2>
+				<p>
+					Enigma Bridge is a web service providing simple and secure encryption, authentication, and other functions for web, mobile, and internet applications.
+				</p>
+				<div class="row">
+					<div class="col-sm-2">
+						<img src="img/User.png" class="center-block" height="150" />
+					</div>
+					<div class="col-sm-2">
+						<h5 class="mg-md tc-rich-electric-blue text-center">
+							Apps using Enigma Bridge
+						</h5><img src="img/devices.png" class="img-responsive img-frame-lg center-block" />
+					</div>
+					<div class="col-sm-2">
+						<h5 class="mg-md tc-rich-electric-blue text-center">
+							Secure internet connection
+						</h5><img src="img/arrowsWithLock2.png" class="img-responsive center-block" />
+					</div>
+					<div class="col-sm-2">
+						<h5 class="mg-md tc-rich-electric-blue text-center">
+							Enigma Bridge server
+						</h5><img src="img/enigmaBridge_blue.png" class="center-block img-frame-lg" height="200" />
+					</div>
+					<div class="col-sm-2">
+						<h5 class="mg-md tc-rich-electric-blue text-center">
+							Secure internal connection
+						</h5><img src="img/arrowsWithLock2.png" class="img-responsive" />
+					</div>
+					<div class="col-sm-2">
+						<h5 class="mg-md tc-rich-electric-blue text-center">
+							Secure hardware element
+						</h5><img src="img/enigmaProcessors.png" class="img-responsive img-frame-lg" />
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-2">
+					</div>
+					<div class="col-sm-2">
+						<p class="text-center">
+							Client-side data protection (keys shared with secure hardware elements.
+						</p>
+					</div>
+					<div class="col-sm-2">
+						<p class="text-center">
+							TLS/HTTPS security and end-to-end encryption to secure hardware elements.
+						</p>
+					</div>
+					<div class="col-sm-2">
+						<p class="text-center">
+							Work distribution, allocation of secure hardware elements, HTTPS server functionality.
+						</p>
+					</div>
+					<div class="col-sm-2">
+						<p class="text-center">
+							Data still encrypted, keys only available in secure hardware elements.
+						</p>
+					</div>
+					<div class="col-sm-2">
+						<p class="text-center">
+							Processing of client requests and encryption of results for secure delivery to user apps.
+						</p>
+					</div>
+				</div>
+				<h3 class="mg-md tc-rich-electric-blue">
+					Detailed log of your request processing
 				</h3>
-				<div id="request" class="logbox2"></div>
+				<form id="form-374" novalidate>
+					<div class="form-group">
+						<textarea class="form-control" rows="4" cols="50" id="log" data-validation-required-message="log is required." placeholder="Log of the last processing ..."></textarea>
+					</div>
+				</form>
 			</div>
 		</div>
-
 	</div>
-</div>
-<!-- encrypt END -->
-
-<!-- bloc-3 -->
-<div class="bloc bgc-rich-electric-blue d-bloc" id="bloc-3">
+</div><!-- generalcrypto END --><!-- bloc-3 --><div class="bloc bgc-rich-electric-blue d-bloc tc-black" id="bloc-3">
 	<div class="container bloc-lg">
 		<div class="row">
 			<div class="col-sm-4">
 				<div class="text-center">
-					<span class="fa fa-heart icon-round icon-md"></span>
+					<span class="fa fa-signal icon-round icon-md"></span>
 				</div>
-				<h3 class="text-center mg-md">
-					Secure
+				<h3 class="text-center mg-md tc-isabelline">
+					Scalability
 				</h3>
 				<p class="text-center">
-					Passwords are encrypted on to prevent compromise. Password databases cannot be used without access to the securely stored encryption key.
+					Enigma Bridge service utilizes a large number of secure processing elements. We allocate these processors to users on-the-fly to adjust to changing user requirements in real time.
 				</p>
 			</div>
 			<div class="col-sm-4">
 				<div class="text-center">
-					<span class="fa fa-rocket icon-round icon-md"></span>
+					<span class="fa fa-magic icon-round icon-md"></span>
 				</div>
-				<h3 class="text-center mg-md">
-					Simple
+				<h3 class="text-center mg-md tc-isabelline">
+					Simplicity
 				</h3>
 				<p class="text-center">
-					Simple plugin-based usage supported on major web platforms including WordPress, Salesforce and more.
+					Use of Enigma Bridge is simple. You can use it with only a general ability to develop software. All configuration is done automatically behind the scenes.
 				</p>
 			</div>
 			<div class="col-sm-4">
 				<div class="text-center">
-					<span class="fa fa-code icon-round icon-md"></span>
+					<span class="fa fa-anchor icon-round icon-md"></span>
 				</div>
-				<h3 class="text-center mg-md">
-					Control
+				<h3 class="text-center mg-md tc-isabelline">
+					High Availability
 				</h3>
 				<p class="text-center">
-					Manage, monitor and control user logins in your system from one place.
+					Enigma Bridge service comprises at least two separate servers with automatic fail-over and load-balancing. A large number of secure processors makes resiliency an inherent property of Enigma Bridge.
 				</p>
 			</div>
 		</div>
 	</div>
-</div>
-<!-- bloc-3 END -->
+</div><!-- bloc-3 END --><!-- Footer - bloc-4 --><div class="bloc bgc-white tc-rich-electric-blue" id="bloc-4">
+	<div class="container bloc-lg">
+		<div class="row">
+			<div class="col-sm-3">
+				<h3 class="mg-md tc-outer-space">
+					Contact
+				</h3>
+				<p>
+					Through our main website at:
+				</p><a href="https://www.enigmabridge.com" class="a-btn a-block ltc-rich-electric-blue" target="_blank">https://www.enigmabridge.com</a>
+			</div>
+			<div class="col-sm-2">
+				<h3 class="mg-md tc-outer-space">
+					Follow us
+				</h3><a href="https://twitter.com/DanCvrcek" class="a-btn a-block ltc-rich-electric-blue" target="_blank">Twitter</a><a href="https://www.dancvrcek.com" class="a-btn a-block ltc-rich-electric-blue">CEO&rsquo;s Blog</a>
+			</div>
+			<div class="col-sm-7">
+				<h3 class="mg-md tc-outer-space">
+					Company
+				</h3>
+				<p>
+					Enigma Bridge was founded in 2015 by security professionals with extensive backgrounds in academia (cryptography), security consulting (for FIs) and card payments. Engima Bridge is on a mission to make the internet security ubiquitous and has developed its own (patent-pending) hardware and software for that purpose.Enigma Bridge runs its offices on Bridge Street in Cambridge, UK.
+				</p>
+			</div>
+		</div>
+	</div>
+</div><!-- Footer - bloc-4 END -->
 </div>
 <!-- Main container END -->
 
