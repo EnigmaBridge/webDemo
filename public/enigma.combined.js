@@ -380,7 +380,6 @@ eb.codec.utf8 = {
             var cChar = x.charAt(i);
             var remChars = (ln - i - 1);
 
-            console.log("cChar: " + cChar);
             if (cChar === '\\') {
                 // Byte coding \xFF ?
                 if (remChars >= 3) {
@@ -698,9 +697,6 @@ eb.padding.pkcs15 = {
         }
 
         var psLen = blockLength - 3 - blb;
-        console.log("blocklen: " + blockLength + " blb: " + blb + ", pslen=" + psLen);
-
-
         var ps = [], i, tmp=0;
         for (i=0; i<psLen; i++) {
             var curByte = 0;
