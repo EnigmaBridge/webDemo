@@ -233,12 +233,12 @@ $(function()
 				// PKCS 1.5 padding?
 				if (keyId === 0x7654 && ($('#one1k').is(':checked') || $('#enigma1k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 1024/8);
-					logger("Request was padded to: " + inputData);
+					logger("Request was padded to 1024: " + inputData);
 				}
 
 				if (keyId === 0xEE03 && ($('#one2k').is(':checked') || $('#enigma2k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 2048/8);
-					logger("Request was padded to: " + inputData);
+					logger("Request was padded to 2048: " + inputData);
 				}
 
 				var plainData = h.toBits("");
