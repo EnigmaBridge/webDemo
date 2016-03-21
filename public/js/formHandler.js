@@ -14,6 +14,9 @@ function cryptoSelected(x){
 	$('.group-radio-rsa1024').hide();
 	$('.group-radio-rsa2048').hide();
 	$('.group-radio-'+x).show();
+	$("#dataraw").val("");
+	$("#datahex").val("");
+
 }
 
 function rawToHexCoded(e, evt) {
