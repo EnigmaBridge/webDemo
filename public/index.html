@@ -14,6 +14,7 @@
 	<script src="./js/bootstrap.js"></script>
 	<script src="./js/blocs.js"></script><link rel='stylesheet' href='./css/font-awesome.min.css'/>
     <script src='./js/jqBootstrapValidation.js'></script>
+	<script src='./enigma.combined.js'></script>
 	<script src='./js/formHandler.js'></script>
     <title>Enigma Bridge - Scalable Hardware Encryption for Cloud</title>
 </head>
@@ -93,7 +94,7 @@
 							</div>
 							<div class="radio">
 								<label>
-									<input type="radio" name="radioFunction" value="option1" id="aes256" />AES-256
+									<input type="radio" name="radioFunction" value="option1" id="aes256" checked />AES-256
 								</label>
 							</div>
 							<div class="form-group">
@@ -132,7 +133,7 @@
 								</label>
 								<input class="form-control" id="datahex" data-validation-required-message="datahex is required." placeholder="456E69676D6154657374566563746F72" />
 							</div>
-							<div class="row">
+							<div class="row group-radio-aes256">
 								<div class="col-sm-12">
 									<div class="radio-inline">
 										<label>
@@ -151,16 +152,16 @@
 									</div>
 								</div>
 							</div>
-							<div class="row voffset">
+							<div class="row group-radio-rsa1024">
 								<div class="col-sm-12">
 									<div class="radio-inline">
 										<label>
-											<input type="radio" name="radiosetrsa1024" value="testvector1k" id="testvector1k" />”EnigmaSign”, no padding
+											<input type="radio" name="radiosetrsa1024" value="testvector1k" id="testvector1k" />test-vector, no padding
 										</label>
 									</div>
 									<div class="radio-inline">
 										<label>
-											<input type="radio" name="radiosetrsa1024" value="lowercasea1k" id="lowercasea1k" />letters ‘a&rsquo;, PKCS#7
+											<input type="radio" name="radiosetrsa1024" value="one1k" id="one1k" />0x1, PKCS#1.5
 										</label>
 									</div>
 									<div class="radio-inline">
@@ -170,16 +171,16 @@
 									</div>
 								</div>
 							</div>
-							<div class="row voffset">
+							<div class="row group-radio-rsa2048">
 								<div class="col-sm-12">
 									<div class="radio-inline">
 										<label>
-											<input type="radio" name="radiosetrsa2048" value="testvector2k" id="testvector2k" />”EnigmaSign”, no padding
+											<input type="radio" name="radiosetrsa2048" value="testvector2k" id="testvector2k" />test-vector, no padding
 										</label>
 									</div>
 									<div class="radio-inline">
 										<label>
-											<input type="radio" name="radiosetrsa2048" value="lowercasea2k" id="lowercasea2k" />letters ‘a&rsquo;, PKCS#7
+											<input type="radio" name="radiosetrsa2048" value="one2k" id="one2k" />0x1, PKCS#1.5
 										</label>
 									</div>
 									<div class="radio-inline">
@@ -200,7 +201,7 @@
 							</p>
 							<div class="radio">
 								<label>
-									<input type="radio" name="radioServer" value="dragonfly" id="dragonfly" />http://dragonfly.smarthsm.net
+									<input type="radio" name="radioServer" value="dragonfly" id="dragonfly" checked/>http://dragonfly.smarthsm.net
 								</label>
 							</div>
 							<div class="radio">
@@ -219,28 +220,28 @@
 					<div class="form-group">
 						<label class="mg-sm">
 							Request sent to Enigma Bridge
-						</label><textarea class="form-control" rows="2" cols="50" id="request" data-validation-required-message="request is required." placeholder="POST RESTful request for selected parameters. The body is “application/json” ..."></textarea>
+						</label><textarea class="form-control" rows="2" cols="50" id="request" placeholder="POST RESTful request for selected parameters. The body is “application/json” ..."></textarea>
 					</div>
 					<div class="row">
 						<div class="col-sm-2">
 							<div class="form-group">
 								<label>
 									Response time
-								</label><textarea class="form-control" rows="3" cols="50" id="responsetime" data-validation-required-message="responsetime is required." placeholder="Time in ms ..."></textarea>
+								</label><textarea class="form-control" rows="3" cols="50" id="responsetime" placeholder="Time in ms ..."></textarea>
 							</div>
 						</div>
 						<div class="col-sm-5">
 							<div class="form-group">
 								<label>
-									Response encoded
-								</label><textarea class="form-control" rows="3" cols="50" id="responsehex" data-validation-required-message="responsehex is required."></textarea>
+									Response
+								</label><textarea class="form-control" rows="3" cols="50" id="responsehex" ></textarea>
 							</div>
 						</div>
 						<div class="col-sm-5">
 							<div class="form-group">
 								<label>
 									Response raw
-								</label><textarea class="form-control" rows="3" cols="50" id="responseraw" data-validation-required-message="responseraw is required."></textarea>
+								</label><textarea class="form-control" rows="3" cols="50" id="responseraw" ></textarea>
 							</div>
 						</div>
 					</div>
