@@ -179,11 +179,11 @@ $(function()
 				var endpoint = undefined;
 				var scheme = undefined;
 				if ($('#dragonfly').is(':checked')){
-					endpoint = 'dragonfly.smarthsm.net';
+					endpoint = 'site1.enigmabridge.com';
 					scheme = 'http';
 				}
 				if ($('#damselfly').is(':checked')) {
-					endpoint = 'damselfly.smarthsm.net';
+					endpoint = 'site2.enigmabridge.com';
 					scheme = 'https';
 				}
 
