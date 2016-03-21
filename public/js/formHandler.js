@@ -171,6 +171,9 @@ $(function()
 				var logger = function(msg) {
 					append_message(msg);
 				};
+				$('#responsehex').html("");
+				$('#responseraw').html("");
+				$('#responsetime').html("");
 
 				// Request configuration generation.
 				var endpoint = undefined;
