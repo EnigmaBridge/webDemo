@@ -257,7 +257,7 @@ $(function()
 				}).fail(function(failType, jqXHR, textStatus, errorThrown, requestObj){
 					console.log("fail! type=" + failType + ", error=" + errorThrown);
 					$('#responsehex').html(" - ");
-					$('#responseraw').html(JSON.stringify(errorThrown));
+					$('#responseraw').html(JSON.stringify(requestObj.rawResponse));
 
 				}).always(function(request){
 					console.log("it is over...");
