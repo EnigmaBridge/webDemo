@@ -207,7 +207,7 @@ $(function()
 					macKey = "2224262820223456789012345678901234567890123456789012345678901234";
 				}
 				if ($('#rsa2048').is(':checked')){
-					keyId = 0xEE03;
+					keyId = 0x9876;
 					pDataMethod = "RSA2048";
 					encKey = "1234567890123456789012345678901234567890123456789012345678901234";
 					macKey = "2224262820223456789012345678901234567890123456789012345678901234";
@@ -234,12 +234,12 @@ $(function()
 				var inputData = odata.val();
 
 				// PKCS 1.5 padding?
-				if (keyId === 0x7654 && ($('#one1k').is(':checked') || $('#enigma1k').is(':checked'))) {
+				if ($('#rsa1024').is(':checked') && ($('#one1k').is(':checked') || $('#enigma1k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 1024/8);
 					logger("Request was padded to 1024: " + inputData);
 				}
 
-				if (keyId === 0xEE03 && ($('#one2k').is(':checked') || $('#enigma2k').is(':checked'))) {
+				if ($('#rsa2048').is(':checked') && ($('#one2k').is(':checked') || $('#enigma2k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 2048/8);
 					logger("Request was padded to 2048: " + inputData);
 				}
