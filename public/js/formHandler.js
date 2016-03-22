@@ -236,12 +236,12 @@ $(function()
 				// PKCS 1.5 padding?
 				if ($('#rsa1024').is(':checked') && ($('#one1k').is(':checked') || $('#enigma1k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 1024/8);
-					logger("Request was padded to 1024: " + inputData);
+					logger("Request was padded to 1024 bits (PKCS #1.5): " + inputData);
 				}
 
 				if ($('#rsa2048').is(':checked') && ($('#one2k').is(':checked') || $('#enigma2k').is(':checked'))) {
 					inputData = pkcs15pad(inputData, 2048/8);
-					logger("Request was padded to 2048: " + inputData);
+					logger("Request was padded to 2048 bits (PKCS #1.5): " + inputData);
 				}
 
 				var plainData = h.toBits("");
