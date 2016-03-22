@@ -43,11 +43,11 @@ function hexCodedToRaw(e, evt) {
 }
 
 function set_request(msg){
-	$("#request")[0].innerHTML = msg;
+	$("#request").val(msg);
 }
 
 function display_message(msg) {
-	$("#log")[0].innerHTML = msg;
+	$("#log").val(msg);
 }
 
 function formatDate(date) {
@@ -62,7 +62,7 @@ function formatDate(date) {
 function append_message(msg) {
 	var status = $("#log");
 	var newMsg = formatDate(new Date()) + " - " + msg;
-	status.html((status.html() + "\n" + newMsg).trim());
+	status.val((status.val() + "\n" + newMsg).trim());
 }
 
 function log(msg){
@@ -174,9 +174,9 @@ $(function()
 				var logger = function(msg) {
 					append_message(msg);
 				};
-				$('#responsehex').html("");
-				$('#responseraw').html("");
-				$('#responsetime').html("");
+				$('#responsehex').val("");
+				$('#responseraw').val("");
+				$('#responsetime').val("");
 
 				// Request configuration generation.
 				var endpoint = undefined;
@@ -257,17 +257,17 @@ $(function()
 
 				// Callbacks settings.
 				request.done(function(response, requestObj, jqXHR) {
-					$('#responsehex').html(h.fromBits(response.protectedData));
-					$('#responseraw').html(JSON.stringify(requestObj.rawResponse));
+					$('#responsehex').val(h.fromBits(response.protectedData));
+					$('#responseraw').val(JSON.stringify(requestObj.rawResponse));
 
 				}).fail(function(failType, jqXHR, textStatus, errorThrown, requestObj){
 					console.log("fail! type=" + failType + ", error=" + errorThrown);
-					$('#responsehex').html(" - ");
-					$('#responseraw').html(JSON.stringify(requestObj.rawResponse));
+					$('#responsehex').val(" - ");
+					$('#responseraw').val(JSON.stringify(requestObj.rawResponse));
 
 				}).always(function(request){
 					console.log("it is over...");
-					$('#responsetime').html(request.requestTime + " ms");
+					$('#responsetime').val(request.requestTime + " ms");
 				});
 
 				// Build the request so we can display request in the form.
