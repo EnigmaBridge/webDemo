@@ -92,10 +92,20 @@ $(function()
 	var failMsg = "Sorry it seems that our server is not responding, Sorry for the inconvenience!"; // Message shown on fail.
 
 	// Basic form logic, hiding options when crypto is selected.
-	cryptoSelected('aes256');
-	$("#aes256").click(function(){ cryptoSelected('aes256'); });
-	$("#rsa1024").click(function(){ cryptoSelected('rsa1024'); });
-	$("#rsa2048").click(function(){ cryptoSelected('rsa2048'); });
+	$("#aes256").click(function(){
+		cryptoSelected('aes256');
+		$("#allzeroes").click();
+	});
+
+	$("#rsa1024").click(function(){
+		cryptoSelected('rsa1024');
+		$("#one1k").click();
+	});
+
+	$("#rsa2048").click(function(){
+		cryptoSelected('rsa2048');
+		$("#one2k").click();
+	});
 
 	// Shortcuts.
 	var rdata = $("#dataraw");
@@ -161,6 +171,10 @@ $(function()
 		odata.keyup();
 	});
 
+	// CJS-1: select default values
+	$("#aes256").click();
+
+	// Form submission.
 	$("input,textarea").jqBootstrapValidation(
 		{
 			preventSubmit: true,
