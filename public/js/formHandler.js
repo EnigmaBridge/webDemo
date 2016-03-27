@@ -94,17 +94,17 @@ $(function()
 	// Basic form logic, hiding options when crypto is selected.
 	$("#aes256").click(function(){
 		cryptoSelected('aes256');
-		$("#allzeroes").click();
+		$("#testvector").click();
 	});
 
 	$("#rsa1024").click(function(){
 		cryptoSelected('rsa1024');
-		$("#one1k").click();
+		$("#enigma1k").click();
 	});
 
 	$("#rsa2048").click(function(){
 		cryptoSelected('rsa2048');
-		$("#one2k").click();
+		$("#enigma2k").click();
 	});
 
 	// Shortcuts.
