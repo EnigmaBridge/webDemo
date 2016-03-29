@@ -197,7 +197,7 @@ $(function()
 				var scheme = undefined;
 				if ($('#dragonfly').is(':checked')){
 					endpoint = 'site1.enigmabridge.com';
-					scheme = 'http';
+					scheme = 'https';
 				}
 				if ($('#damselfly').is(':checked')) {
 					endpoint = 'site2.enigmabridge.com';
