@@ -225,6 +225,7 @@ $(function()
 					append_message(msg);
 				};
 
+				var body = $("body");
 				var statusElem = $('#responsetime');
 				$('#responsehex').val("");
 				$('#responseraw').val("");
@@ -328,6 +329,7 @@ $(function()
 
 				}).always(function(request, data){
 					console.log("Processing finished");
+					body.removeClass("loading");
 
 				});
 
@@ -340,6 +342,7 @@ $(function()
 				// Status - loading
 				statusElem.val('');
 				successBg(statusElem);
+				body.addClass("loading");
 
 				// Do the call.
 				request.doRequest();
