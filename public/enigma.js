@@ -41,6 +41,189 @@ Function.prototype.inheritsFrom = function( parentClassOrObject, newPrototype ){
 };
 
 /**
+ * SHA1 implementation, not present in default SJCL.
+ * We need it for HOTP.
+ * @param a
+ */
+sjcl.hash.sha1 = function(a) {
+    if (a) {
+        this._h = a._h.slice(0);
+        this._buffer = a._buffer.slice(0);
+        this._length = a._length
+    } else {
+        this.reset()
+    }
+};
+sjcl.hash.sha1.hash = function(a) {
+    return (new sjcl.hash.sha1()).update(a).finalize()
+};
+sjcl.hash.sha1.prototype = {
+    blockSize: 512,
+    reset: function() {
+        this._h = this._init.slice(0);
+        this._buffer = [];
+        this._length = 0;
+        return this
+    },
+    update: function(f) {
+        if (typeof f === "string") {
+            f = sjcl.codec.utf8String.toBits(f)
+        }
+        var e, a = this._buffer = sjcl.bitArray.concat(this._buffer, f), d = this._length, c = this._length = d + sjcl.bitArray.bitLength(f);
+        for (e = this.blockSize + d & -this.blockSize; e <= c; e += this.blockSize) {
+            this._block(a.splice(0, 16))
+        }
+        return this
+    },
+    finalize: function() {
+        var c, a = this._buffer, d = this._h;
+        a = sjcl.bitArray.concat(a, [sjcl.bitArray.partial(1, 1)]);
+        for (c = a.length + 2; c & 15; c++) {
+            a.push(0)
+        }
+        a.push(Math.floor(this._length / 4294967296));
+        a.push(this._length | 0);
+        while (a.length) {
+            this._block(a.splice(0, 16))
+        }
+        this.reset();
+        return d
+    },
+    _init: [1732584193, 4023233417, 2562383102, 271733878, 3285377520],
+    _key: [1518500249, 1859775393, 2400959708, 3395469782],
+    _f: function(e, a, g, f) {
+        if (e <= 19) {
+            return (a & g) | (~a & f)
+        } else {
+            if (e <= 39) {
+                return a ^ g ^ f
+            } else {
+                if (e <= 59) {
+                    return (a & g) | (a & f) | (g & f)
+                } else {
+                    if (e <= 79) {
+                        return a ^ g ^ f
+                    }
+                }
+            }
+        }
+    },
+    _S: function(b, a) {
+        return (a << b) | (a >>> 32 - b)
+    },
+    _block: function(n) {
+        var r, g, p, o, m, l, j, q = n.slice(0), i = this._h, f = this._key;
+        p = i[0];
+        o = i[1];
+        m = i[2];
+        l = i[3];
+        j = i[4];
+        for (r = 0; r <= 79; r++) {
+            if (r >= 16) {
+                q[r] = this._S(1, q[r - 3] ^ q[r - 8] ^ q[r - 14] ^ q[r - 16])
+            }
+            g = (this._S(5, p) + this._f(r, o, m, l) + j + q[r] + this._key[Math.floor(r / 20)]) | 0;
+            j = l;
+            l = m;
+            m = this._S(30, o);
+            o = p;
+            p = g
+        }
+        i[0] = (i[0] + p) | 0;
+        i[1] = (i[1] + o) | 0;
+        i[2] = (i[2] + m) | 0;
+        i[3] = (i[3] + l) | 0;
+        i[4] = (i[4] + j) | 0
+    }
+};
+
+/**
+ * Bit array codec implementations.
+ * @author Nils Kenneweg
+ */
+sjcl.codec.base32 = {
+    /** The base32 alphabet.
+     * @private
+     */
+    _chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+    _hexChars: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+
+    /* bits in an array */
+    BITS: 32,
+    /* base to encode at (2^x) */
+    BASE: 5,
+    /* bits - base */
+    REMAINING: 27,
+
+    /** Convert from a bitArray to a base32 string. */
+    fromBits: function (arr, _noEquals, _hex) {
+        var BITS = sjcl.codec.base32.BITS, BASE = sjcl.codec.base32.BASE, REMAINING = sjcl.codec.base32.REMAINING;
+        var out = "", i, bits=0, c = sjcl.codec.base32._chars, ta=0, bl = sjcl.bitArray.bitLength(arr);
+
+        if (_hex) {
+            c = sjcl.codec.base32._hexChars;
+        }
+
+        for (i=0; out.length * BASE < bl; ) {
+            out += c.charAt((ta ^ arr[i]>>>bits) >>> REMAINING);
+            if (bits < BASE) {
+                ta = arr[i] << (BASE-bits);
+                bits += REMAINING;
+                i++;
+            } else {
+                ta <<= BASE;
+                bits -= BASE;
+            }
+        }
+        while ((out.length & 7) && !_noEquals) { out += "="; }
+
+        return out;
+    },
+
+    /** Convert from a base32 string to a bitArray */
+    toBits: function(str, _hex) {
+        str = str.replace(/\s|=/g,'').toUpperCase();
+        var BITS = sjcl.codec.base32.BITS, BASE = sjcl.codec.base32.BASE, REMAINING = sjcl.codec.base32.REMAINING;
+        var out = [], i, bits=0, c = sjcl.codec.base32._chars, ta=0, x, format="base32";
+
+        if (_hex) {
+            c = sjcl.codec.base32._hexChars;
+            format = "base32hex"
+        }
+
+        for (i=0; i<str.length; i++) {
+            x = c.indexOf(str.charAt(i));
+            if (x < 0) {
+                // Invalid character, try hex format
+                if (!_hex) {
+                    try {
+                        return sjcl.codec.base32hex.toBits(str);
+                    }
+                    catch (e) {}
+                }
+                throw new sjcl.exception.invalid("this isn't " + format + "!");
+            }
+            if (bits > REMAINING) {
+                bits -= REMAINING;
+                out.push(ta ^ x>>>bits);
+                ta  = x << (BITS-bits);
+            } else {
+                bits += BASE;
+                ta ^= x << (BITS-bits);
+            }
+        }
+        if (bits&56) {
+            out.push(sjcl.bitArray.partial(bits&56, ta, 1));
+        }
+        return out;
+    }
+};
+sjcl.codec.base32hex = {
+    fromBits: function (arr, _noEquals) { return sjcl.codec.base32.fromBits(arr,_noEquals,1); },
+    toBits: function (str) { return sjcl.codec.base32.toBits(str,1); }
+};
+
+/**
  * Base EB package.
  * @type {{name: string}}
  */
@@ -77,7 +260,7 @@ eb.misc = {
         var i = 0;
 
         for(i = 0; i < length; i++){
-            nonce += alphabet.charAt(Math.floor(Math.random() * alphabetLen));
+            nonce += alphabet.charAt(((sjcl.random.randomWords(1)[0]) & 0xffff) % alphabetLen);
         }
 
         return nonce;
@@ -92,12 +275,109 @@ eb.misc = {
         return [x[0]^y[0],x[1]^y[1],x[2]^y[2],x[3]^y[3]];
     },
     absorb: function(dst, src){
+        if (src === undefined){
+            return dst;
+        }
+
         for(var key in src) {
             if (src.hasOwnProperty(key)) {
                 dst[key] = src[key];
             }
         }
         return dst;
+    },
+    absorbKey: function(dst, src, key){
+        if (src !== undefined && key in src){
+            dst[key] = src[key];
+        }
+        return dst;
+    },
+    absorbKeyEx: function(dst, src, srcKey, dstKey){
+        if (src !== undefined && srcKey in src){
+            dst[dstKey] = src[srcKey];
+        }
+        return dst;
+    },
+    absorbValue: function(dst, value, valueKey, defaultValue){
+        if (value !== undefined){
+            dst[valueKey] = value;
+        } else if (defaultValue !== undefined){
+            dst[valueKey] = defaultValue;
+        }
+    },
+
+    /**
+     * Converts argument to the SJCL bitArray.
+     * @param x
+     *      if x is a number, it is converted to SJCL bitArray. Warning, 32bit numbers are supported only.
+     *      if x is a string, it is considered as hex coded string.
+     *      if x is an array it is considered as SJCL bitArray.
+     * @returns {*}
+     */
+    inputToBits: function(x){
+        var ln;
+        if (typeof(x) === 'number'){
+            return sjcl.codec.hex.toBits(sprintf("%02x", x));
+
+        } else if (typeof(x) === 'string') {
+            x = x.trim().replace(/^0x/, '');
+            if (!(x.match(/^[0-9A-Fa-f]+$/))){
+                throw new eb.exception.invalid("Invalid hex coded number");
+            }
+
+            return sjcl.codec.hex.toBits(x);
+
+        } else {
+            return x;
+
+        }
+    },
+
+    /**
+     * Converts argument to the hexcoded string.
+     * @param x -
+     *      if x is a number, will be converted to a hex string. Warning, 32bit numbers are supported only.
+     *      if x is a string, it is considered as hex coded string.
+     *      if x is an array it is considered as SJCL bitArray.
+     */
+    inputToHex: function(x){
+        var tmp,ln;
+        if (typeof(x) === 'number'){
+            return sprintf("%x", x);
+
+        } else if (typeof(x) === 'string') {
+            x = x.trim().replace(/^0x/, '');
+            if (!(x.match(/^[0-9A-Fa-f]+$/))){
+                throw new eb.exception.invalid("Invalid hex coded number");
+            }
+
+            return x;
+
+        } else {
+            return sjcl.codec.hex.fromBits(x);
+
+        }
+    },
+
+    /**
+     * Left zero padding to the even number of hexcoded digits.
+     * @param x
+     * @returns {*}
+     */
+    padHexToEven: function(x){
+        x = x.trim().replace(/[\s]+/g, '').replace(/^0x/, '');
+        return ((x.length & 1) == 1) ? ('0'+x) : x;
+    },
+
+    /**
+     * Left zero padding for hex string to the given size.
+     * @param x
+     * @param size
+     * @returns {*}
+     */
+    padHexToSize: function(x, size){
+        x = x.trim().replace(/[\s]+/g, '').replace(/^0x/, '');
+        return (x.length<size) ? (('0'.repeat(size-x.length))+x) : x
     }
 };
 
@@ -451,15 +731,15 @@ eb.padding.pkcs15 = {
                 curByte = 0xff;
             } else if (bt == 2){
                 do {
-                    curByte = (sjcl.random.randomWords(1, 10)[0]) & 0xff;
+                    curByte = (sjcl.random.randomWords(1)[0]) & 0xff;
                 }while(curByte == 0);
             }
 
-            tmp = tmp << 8 | curByte;
-            if ((i&3) === 3) {
-                ps.push(tmp);
-                tmp = 0;
-            }
+           tmp = tmp << 8 | curByte;
+           if ((i&3) === 3) {
+                 ps.push(tmp);
+                 tmp = 0;
+           }
         }
         if (i&3) {
             ps.push(sjcl.bitArray.partial(8*(i&3), tmp));
@@ -668,6 +948,44 @@ sjcl.mode.cbc = {
  */
 eb.comm = {
     name: "comm",
+
+    /**
+     * General status constants.
+     */
+    status: {
+        ERROR_CLASS_SECURITY:           0x2000,
+        
+        ERROR_CLASS_WRONGDATA:          0x8000,
+        SW_INVALID_TLV_FORMAT:          0x8000 | 0x04c,
+        SW_WRONG_PADDING:               0x8000 | 0x03d,
+        SW_STAT_INVALID_APIKEY:         0x8000 | 0x068,
+        SW_AUTHMETHOD_NOT_ALLOWED:      0x8000 | 0x0b9,
+
+        ERROR_CLASS_SECURITY_USER:      0xa000,
+        SW_HOTP_KEY_WRONG_LENGTH:       0xa000 | 0x056,
+        SW_HOTP_TOO_MANY_FAILED_TRIES:  0xa000 | 0x066,
+        SW_HOTP_WRONG_CODE:             0xa000 | 0x0b0,
+        SW_HOTP_COUNTER_OVERFLOW:       0xa000 | 0x0b3,
+        SW_AUTHMETHOD_UNKNOWN:          0xa000 | 0x0ba,
+        SW_AUTH_TOO_MANY_FAILED_TRIES:  0xa000 | 0x0b1,
+        SW_AUTH_MISMATCH_USER_ID:       0xa000 | 0x0b6,
+        SW_PASSWD_TOO_MANY_FAILED_TRIES:0xa000 | 0x063,
+        SW_PASSWD_INVALID_LENGTH:       0xa000 | 0x064,
+        SW_WRONG_PASSWD:                0xa000 | 0x065,
+
+        SW_STAT_OK:                     0x9000,
+
+        PDATA_FAIL_CONNECTION:          0x1,
+        PDATA_FAIL_RESPONSE_PARSING:    0x3,
+        PDATA_FAIL_RESPONSE_FAILED:     0x2,
+    },
+
+    /**
+     * Converts mangled nonce value to the original one in ProcessData response.
+     * ProcessData response has nonce return value response_nonce[i] = request_nonce[i] + 0x1
+     * @param nonce
+     * @returns {*}
+     */
     demangleNonce: function(nonce){
         var ba = sjcl.bitArray;
         var bl = ba.bitLength(nonce);
@@ -690,7 +1008,67 @@ eb.comm = {
         c = (nonce.slice(i, i + 1)[0] - sub) >>> rbl;
         output.splice(i, 0, c);
         return sjcl.bitArray.clamp(output, bl);
+    },
+
+    /**
+     * Base class constructor.
+     */
+    base: function(){
+
+    },
+
+    /**
+     * User object constructor
+     */
+    uo: function(uoid, encKey, macKey){
+        var av = eb.misc.absorbValue;
+        av(this, uoid, 'uoid');
+        av(this, encKey, 'encKey');
+        av(this, macKey, 'macKey');
     }
+};
+eb.comm.base.prototype = {
+    /**
+     * If set to true, request body building steps are logged.
+     * @input
+     */
+    debuggingLog: false,
+
+    /**
+     * Aux logging function
+     * @input
+     */
+    logger: null,
+
+    _log:  function(x) {
+        if (!this.debuggingLog){
+            return;
+        }
+
+        if (console && console.log){
+            console.log(x);
+        }
+
+        if (this.logger){
+            this.logger(x);
+        }
+    }
+};
+eb.comm.uo.prototype = {
+    /**
+     * User object ID.
+     */
+    uoid: undefined,
+
+    /**
+     * Encryption communication key.
+     */
+    encKey: undefined,
+
+    /**
+     * MAC communication key.
+     */
+    macKey: undefined,
 };
 
 /**
@@ -879,7 +1257,7 @@ eb.comm.response.prototype = {
      * @returns {boolean}
      */
     isCodeOk: function(){
-        return this.statusCode == 0x9000;
+        return this.statusCode == eb.comm.status.SW_STAT_OK;
     },
 
     toString: function(){
@@ -1087,10 +1465,14 @@ eb.comm.responseParser.prototype = {
      * Parse EB response
      *
      * @param data - json response
+     * @param resp - response object to put data to.
+     * @param options
      * @returns request unwrapped response.
      */
-    parse: function(data){
-        var resp = this.response = new eb.comm.response();
+    parse: function(data, resp, options){
+        resp = resp || this.response;
+        resp = resp || new eb.comm.response();
+        this.response = resp;
         this.parseCommonHeaders(resp, data);
 
         // Build new response message.
@@ -1158,10 +1540,15 @@ eb.comm.processDataResponseParser.inheritsFrom(eb.comm.responseParser, {
      * Parse EB response
      *
      * @param data - json response
+     * @param resp - response object to put data to.
+     * @param options
      * @returns request unwrapped response.
      */
-    parse: function(data){
-        var resp = this.response = new eb.comm.processDataResponse();
+    parse: function(data, resp, options){
+        resp = resp || this.response;
+        resp = resp || new eb.comm.processDataResponse();
+        this.response = resp;
+
         this.parseCommonHeaders(resp, data);
         if (!this.success()){
             this._log("Error in processing, status: " + data.status + ", message: " + resp.statusDetail);
@@ -1340,9 +1727,9 @@ eb.comm.connector.prototype = {
      */
     _socketRequest: "",
 
-    _doneCallback: function(response, requestObj, jqXHR){},
-    _failCallback: function(failType, jqXHR, textStatus, errorThrown, requestObj){},
-    _alwaysCallback: function(requestObj){},
+    _doneCallback: function(response, requestObj, data){},
+    _failCallback: function(failType, data){},
+    _alwaysCallback: function(requestObj, data){},
 
     done: function(x){
         this._doneCallback = x;
@@ -1379,36 +1766,17 @@ eb.comm.connector.prototype = {
         }
 
         // Advanced connection settings.
-        if ("remoteEndpoint" in configObject){
-            this.remoteEndpoint = configObject.remoteEndpoint;
-        }
-        if ("remotePort" in configObject){
-            this.remotePort = configObject.remotePort;
-        }
-        if ("requestMethod" in configObject){
-            this.requestMethod = configObject.requestMethod;
-        }
-        if ("requestScheme" in configObject){
-            this.requestScheme = configObject.requestScheme;
-        }
-        if ("requestTimeout" in configObject){
-            this.requestTimeout = configObject.requestTimeout;
-        }
-        if ("debuggingLog" in configObject){
-            this.debuggingLog = configObject.debuggingLog;
-        }
-        if ("logger" in configObject){
-            this.logger = configObject.logger;
-        }
-        if ("responseParser" in configObject){
-            this.responseParser = configObject.responseParser;
-        }
-        if ("reqHeader" in configObject){
-            this.reqHeader = configObject.reqHeader;
-        }
-        if ("reqBody" in configObject){
-            this.reqBody = configObject.reqBody;
-        }
+        var ak = eb.misc.absorbKey;
+        ak(this, configObject, "remoteEndpoint");
+        ak(this, configObject, "remotePort");
+        ak(this, configObject, "requestMethod");
+        ak(this, configObject, "requestScheme");
+        ak(this, configObject, "requestTimeout");
+        ak(this, configObject, "debuggingLog");
+        ak(this, configObject, "logger");
+        ak(this, configObject, "responseParser");
+        ak(this, configObject, "reqHeader");
+        ak(this, configObject, "reqBody");
     },
 
     /**
@@ -1460,6 +1828,8 @@ eb.comm.connector.prototype = {
                 ebc._requestFinished();
                 ebc._log("Response status: " + textStatus);
                 ebc._log("Raw response: " + JSON.stringify(data));
+
+                // Process AJAX success. By default, response parsing is done. Subclass may modify this behavior.
                 ebc.processAnswer(data, textStatus, jqXHR);
 
             }).fail(function (jqXHR, textStatus, errorThrown) {
@@ -1467,16 +1837,13 @@ eb.comm.connector.prototype = {
             ebc._log("Error: " + sprintf("Error: status=[%d], responseText: [%s], error: [%s], status: [%s] misc: %s",
                     jqXHR.status, jqXHR.responseText, errorThrown, textStatus, JSON.stringify(jqXHR)));
 
+            // Process AJAX fail, subclass can modify behavior, hook something.
             ebc.processFail(jqXHR, textStatus, errorThrown);
-            if (ebc._failCallback) {
-                ebc._failCallback(0x1, jqXHR, textStatus, errorThrown, ebc);
-            }
 
         }).always(function (data, textStatus, jqXHR) {
+            // Process AJAX always, subclass can modify behavior, hook something.
             ebc.processAlways(data, textStatus, jqXHR);
-            if (ebc._alwaysCallback) {
-                ebc._alwaysCallback(ebc);
-            }
+
         });
     },
 
@@ -1499,29 +1866,42 @@ eb.comm.connector.prototype = {
     processAnswer: function(data, textStatus, jqXHR){
         this.rawResponse = data;
         try {
-            var h = sjcl.codec.hex;
-
-            // Build a new EB request.
             var responseParser = this.getResponseParser();
-            this.response = responseParser.parse(data);
+            this.response = this.getResponseObject();
+            this.response = responseParser.parse(data, this.response);
 
             if (responseParser.success()) {
                 this._log("Processing complete, response: " + this.response.toString());
                 if (this._doneCallback){
-                    this._doneCallback(this.response, this, jqXHR)
+                    this._doneCallback(this.response, this, {
+                        'jqXHR':jqXHR,
+                        'textStatus':textStatus,
+                        'response':this.response,
+                        'requestObj':this
+                    });
                 }
 
             } else {
                 this._log("Failure, status: " + this.response.toString());
                 if (this._failCallback){
-                    this._failCallback(0x2, jqXHR, textStatus, this.response, this);
+                    this._failCallback(eb.comm.status.PDATA_FAIL_RESPONSE_FAILED, {
+                        'jqXHR':jqXHR,
+                        'textStatus':textStatus,
+                        'response':this.response,
+                        'requestObj':this
+                    });
                 }
             }
 
         } catch(e){
             this._log("Exception when processing the response: " + e);
             if (this._failCallback){
-                this._failCallback(0x3, jqXHR, textStatus, e, this);
+                this._failCallback(eb.comm.status.PDATA_FAIL_RESPONSE_PARSING, {
+                    'jqXHR':jqXHR,
+                    'textStatus':textStatus,
+                    'requestObj':this,
+                    'parseException':e
+                });
             }
 
             throw e;
@@ -1530,22 +1910,40 @@ eb.comm.connector.prototype = {
 
     /**
      * To be overriden.
+     * Called on AJAX fail.
+     *
      * @param jqXHR
      * @param textStatus
      * @param errorThrown
      */
     processFail: function(jqXHR, textStatus, errorThrown){
-
+        if (this._failCallback) {
+            this._failCallback(eb.comm.status.PDATA_FAIL_CONNECTION, {
+                'jqXHR':jqXHR,
+                'textStatus':textStatus,
+                'errorThrown':errorThrown,
+                'requestObj': this
+            });
+        }
     },
 
     /**
      * To be overriden.
+     * Called on AJAX always.
+     *
      * @param data
      * @param textStatus
      * @param jqXHR
      */
     processAlways: function(data, textStatus, jqXHR){
-
+        if (this._alwaysCallback) {
+            this._alwaysCallback(this, {
+                'responseRawData':data,
+                'textStatus':textStatus,
+                'jqXHR':jqXHR,
+                'requestObj': this
+            });
+        }
     },
 
     /**
@@ -1587,6 +1985,14 @@ eb.comm.connector.prototype = {
     },
 
     /**
+     * Returns respone object to be used by the response parser.
+     * Enables to specify a subclass of the original response class.
+     */
+    getResponseObject: function(){
+        return new eb.comm.response();
+    },
+
+    /**
      * Returns raw EB request for raw socket transport method.
      * For debugging & verification.
      *
@@ -1594,8 +2000,8 @@ eb.comm.connector.prototype = {
      */
     getSocketRequest: function(){
         this._socketRequest = {};
-        $.extend(this._socketRequest, this.reqHeader || {});
-        $.extend(this._socketRequest, this.reqBody || {});
+        $.extend(true, this._socketRequest, this.reqHeader || {});
+        $.extend(true, this._socketRequest, this.reqBody || {});
         return this._socketRequest;
     },
 
@@ -1744,18 +2150,11 @@ eb.comm.apiRequest.inheritsFrom(eb.comm.connector, {
         eb.comm.apiRequest.superclass.configure.call(this, configObject);
 
         // Configure this.
-        if ("callFunction" in configObject){
-            this.callFunction = configObject.callFunction;
-        }
-        if ("apiKey" in configObject){
-            this.apiKey = configObject.apiKey;
-        }
-        if ("apiKeyLow4Bytes" in configObject){
-            this.apiKeyLow4Bytes = configObject.apiKeyLow4Bytes;
-        }
-        if ("nonce" in configObject){
-            this.nonce = configObject.nonce;
-        }
+        var ak = eb.misc.absorbKey;
+        ak(this, configObject, "callFunction");
+        ak(this, configObject, "apiKey");
+        ak(this, configObject, "apiKeyLow4Bytes");
+        ak(this, configObject, "nonce");
     },
 
     /**
@@ -1777,7 +2176,7 @@ eb.comm.apiRequest.inheritsFrom(eb.comm.connector, {
                 this.getNonce());
 
         } else if (this.requestMethod == "GET"){
-            return sprintf("%s://%s:%d/%s/%s/%s/%s/%s",
+            return sprintf("%s://%s:%d/%s/%s/%s/%s%s",
                 this.requestScheme,
                 this.remoteEndpoint,
                 this.remotePort,
@@ -1785,7 +2184,7 @@ eb.comm.apiRequest.inheritsFrom(eb.comm.connector, {
                 this._apiKeyReq,
                 this.callFunction,
                 this.getNonce(),
-                JSON.stringify(this.reqBody));
+                this.reqBody !== undefined ? ("/" + JSON.stringify(this.reqBody)) : "");
 
         } else {
             throw new eb.exception.invalid("Invalid configuration, unknown method: " + this.requestMethod);
@@ -1897,26 +2296,18 @@ eb.comm.processData.inheritsFrom(eb.comm.apiRequest, {
 
         var toConfig = configObject;
         if ("userObjectId" in configObject){
-            toConfig = $.extend(toConfig, {apiKeyLow4Bytes : configObject.userObjectId});
+            toConfig = $.extend(true, toConfig, {apiKeyLow4Bytes : configObject.userObjectId});
         }
 
         // Configure with parent.
         eb.comm.processData.superclass.configure.call(this, toConfig);
 
         // Configure this.
-        if ("aesKey" in configObject){
-            this.aesKey = configObject.aesKey;
-        }
-        if ("macKey" in configObject){
-            this.macKey = configObject.macKey;
-        }
-        if ("userObjectId" in configObject){
-            this.userObjectId = configObject.userObjectId;
-            this.apiKeyLow4Bytes = configObject.userObjectId;
-        }
-        if ("callRequestType" in configObject){
-            this.callRequestType = configObject.callRequestType;
-        }
+        var ak = eb.misc.absorbKey;
+        ak(this, configObject, "aesKey");
+        ak(this, configObject, "macKey");
+        ak(this, configObject, "userObjectId");
+        ak(this, configObject, "callRequestType");
     },
 
     /**
@@ -2113,6 +2504,1348 @@ eb.comm.getPubKey.inheritsFrom(eb.comm.apiRequest, {
 
         this.responseParser = pubKeyParser;
         return this.responseParser;
+    }
+});
+
+/**
+ * HOTP feature.
+ */
+eb.comm.hotp = {
+    // Template for generation of new user context.
+    // USER_AUTH_CTX structure: version 1B | user_id 8B | flags 4B | #total_failed_tries 1B | #max_total_failed_tries 1B | TLV_auth_method1 | ... | TLV_auth_method_n |
+    //                   VR    USER-ID-8B     flags   #e #m
+    ctxTemplateUsr:     '01         %s       00000000 00 04',
+
+    // HOTP method:      tt  len cf mf HOTP 8B counter  ct  Dg  Ln Secret - template
+    ctxTemplateHotp:    '3f 001d 00 03 0000000000000000 02 %02x 10 11223344556677881122334455667788',
+
+    // Passwd method:    tt len  cf mf hl   password hash
+    ctxTemplatePasswd:  '40 %04x 00 03 %02x %s',
+
+    // VR - version
+    // #e - total failed entries
+    // #m - max total failed entries
+    // tt - auth method type. 0x3f = HOTP, 0x40 = password auth.
+    // len - overall auth record length
+    // Dg - digits
+    // Ln - secret length
+    // cf - current fails
+    // mf - maximum number of fails
+    // hl - hash length
+
+    // Constants
+    TLV_TYPE_USERAUTHCONTEXT: 0xa3,
+    TLV_TYPE_NEWAUTHCONTEXT: 0xa8,
+    TLV_TYPE_UPDATEAUTHCONTEXT: 0xa7,
+    TLV_TYPE_HOTPCODE: 0xa5,
+    TLV_TYPE_PASSWORDHASH: 0xa4,
+    USERAUTHCTX_MAIN_USERID_LENGTH: 8,
+    USERAUTH_FLAG_HOTP: 0x0001,
+    USER_AUTH_TYPE_HOTP: 63,
+    USERAUTH_FLAG_PASSWD: 0x0002,
+    USER_AUTH_TYPE_PASSWD: 64,
+    USERAUTH_FLAG_GLOBALTRIES: 0x0004,
+    USER_AUTH_TYPE_GLOBALTRIES: 62,
+
+    HOTP_DIGITS_DEFAULT: 6,
+
+    /**
+     * Builds generalized context template from the options.
+     * May contain two authentization methods at the moment, HOTP, Password.
+     * @param options
+     *      userId:  user ID aditional entropy. By default 0000000000000001
+     *      methods: flags for methods to include in context. USERAUTH_FLAG_HOTP, USERAUTH_FLAG_PASSWD.
+     *      hotp: {digits}: hotp digits in the template. HOTP code length.
+     *      passwd: {hash}: password hash used for authentication.
+     */
+    getCtxTemplate: function(options){
+        var defaults = {
+            userId: eb.comm.hotp.userIdToHex("01"),
+            methods: eb.comm.hotp.USERAUTH_FLAG_HOTP,
+            hotp:{
+                digits: eb.comm.hotp.HOTP_DIGITS_DEFAULT
+            },
+            passwd:{
+                hash: undefined
+            }
+        };
+
+        options = $.extend(true, defaults, options || {});
+        var useHotp = options && ((options.methods & eb.comm.hotp.USERAUTH_FLAG_HOTP) > 0);
+        var usePass = options && ((options.methods & eb.comm.hotp.USERAUTH_FLAG_PASSWD) > 0);
+
+        var userId = eb.comm.hotp.userIdToHex(options && options.userId);
+
+        // Build base context.
+        var ctx = sprintf(this.ctxTemplateUsr, userId);
+
+        // Add HOTP method, if desired.
+        if (useHotp){
+            var digits = options && options.hotp && options.hotp.digits;
+            ctx += sprintf(this.ctxTemplateHotp, digits);
+        }
+
+        // Add Password method, if desired.
+        if (usePass){
+            var hash = options && options.passwd && options.passwd.hash;
+            if (hash === undefined || hash.length == 0) {
+                throw new eb.exception.invalid("Password auth method specified, empty hash");
+            }
+
+            hash = eb.misc.padHexToEven(eb.misc.inputToHex(hash));
+            var hashLen = hash.length / 2;
+            var totalLen = 3 + hashLen;
+
+            ctx += sprintf(this.ctxTemplatePasswd, totalLen, hashLen, hash);
+        }
+
+        return sjcl.codec.hex.toBits(ctx.replace(/ /g,''));
+    },
+
+    /**
+     * Encrypts HOTP CTX template with random key & MACs with random key to obtain encrypted
+     * template blob. Required for new user HOTPCTX init.
+     *
+     * @param tpl
+     * @returns {*}
+     */
+    prepareUserContext: function(tpl){
+        var randomEncKey = sjcl.random.randomWords(8);
+        var randomMacKey = sjcl.random.randomWords(8);
+
+        var aes = new sjcl.cipher.aes(randomEncKey);
+        var aesMac = new sjcl.cipher.aes(randomMacKey);
+        var hmac = new sjcl.misc.hmac_cbc(aesMac, 16, eb.padding.empty);
+
+        // Padding of the TPL.
+        tpl = eb.padding.pkcs7.pad(tpl);
+
+        // IV is null, nonce in the first block is kind of IV.
+        var IV = sjcl.codec.hex.toBits('00'.repeat(16));
+        var encryptedData = sjcl.mode.cbc.encrypt(aes, tpl, IV, [], true);
+        var hmacData = hmac.mac(encryptedData);
+
+        return sjcl.bitArray.concat(encryptedData, hmacData);
+    },
+
+    /**
+     * Converts HOTP number given as string to hex-coded array.
+     * Used when authenticating via HOTP code.
+     *
+     * Warning: does not perform radix change. 12345678 -> d2h(12)|d2h(34)|d2h(56)|d2h(78) = 0c22384e
+     * d2h(12345678) = 0BC614E
+     *
+     * @param hotpCode numeric authentication code coded as string in decimal.
+     * @param length HOTP code length. Default = 8. Usually 6,8,10,12
+     * @ref: intToExpandedShortByteArray()
+     */
+    hotpCodeToHexCoded: function(hotpCode, length){
+        length = length || eb.comm.hotp.HOTP_DIGITS_DEFAULT;
+        var inputCode = "000000000000000000000000000" + hotpCode;
+        var i,idx,cur,curNum,codeLength = inputCode.length;
+        var result = "";
+        for(i=0; i<(length+1)/2; i++){
+            idx = codeLength-(i+1)*2;
+            cur = inputCode.substring(idx, idx + 2);
+            curNum = parseInt(cur, 10);
+            result = sprintf("%04X", curNum) + result;
+        }
+        return result;
+    },
+
+    /**
+     * Function used to normalize user ID bitArray representation - 2 words width.
+     * @param x
+     */
+    userIdBitsNormalize: function(x){
+        var ln = x.length;
+        if (ln == 2){
+            return x;
+        } else if (ln == 0){
+            return [0,0];
+        } else if (ln == 1){
+            return [0, x[0]];
+        } else {
+            return [x[0], x[1]];
+        }
+    },
+
+    /**
+     * Converts user id argument to the 64bit SJCL bitArray.
+     * @param x
+     *      if x is a number, it is converted to SJCL bitArray. Warning, 32bit numbers are supported only.
+     *      if x is a string, it is considered as hex coded string.
+     *      if x is an array it is considered as SJCL bitArray.
+     */
+    userIdToBits: function(x){
+        var ln;
+        if (typeof(x) === 'number'){
+            return eb.comm.hotp.userIdBitsNormalize(sjcl.codec.hex.toBits(sprintf("%x", x)));
+
+        } else if (typeof(x) === 'string') {
+            x = x.trim();
+            ln = x.length;
+            if (ln > 16 || ln === 0 || !(x.match(/^[0-9A-Fa-f]+$/))){
+                throw new eb.exception.invalid("User ID string invalid");
+            }
+
+            return eb.comm.hotp.userIdBitsNormalize(sjcl.codec.hex.toBits(x));
+
+        } else {
+            return eb.comm.hotp.userIdBitsNormalize(x);
+
+        }
+    },
+
+    /**
+     * Converts user id argument to the hexcoded string coding 8 bytes.
+     * @param x -
+     *      if x is a number, will be converted to a hex string. Warning, 32bit numbers are supported only.
+     *      if x is a string, it is considered as hex coded string. It is padded to 8 bytes.
+     *      if x is an array it is considered as SJCL bitArray.
+     */
+    userIdToHex: function(x){
+        var tmp,ln;
+        if (typeof(x) === 'number'){
+            // number
+            return sprintf("%016x", x);
+
+        } else if (typeof(x) === 'string') {
+            // hex-coded string
+            x = x.trim();
+            ln = x.length;
+            if (ln > 16 || ln === 0 || !(x.match(/^[0-9A-Fa-f]+$/))){
+                throw new eb.exception.invalid("User ID string invalid");
+            }
+
+            return ln < 16 ? ('0'.repeat(16-ln)) + x : x;
+
+        } else {
+            // SJCL bitArray
+            tmp = sjcl.codec.hex.fromBits(x);
+            ln = tmp.length;
+            if (ln > 16){
+                throw new eb.exception.invalid("User ID string invalid");
+            }
+            return ln < 16 ? ('0'.repeat(16-ln)) + tmp : tmp;
+        }
+    },
+
+    /**
+     * Utility function to compute HOTP value, returned as string coded in decimal base.
+     * @see https://tools.ietf.org/html/rfc4226
+     * @param key           bitArray key | hexcoded key
+     * @param ctr           8byte HOTP counter. bitArray or hexcoded string or numeric
+     * @param length        length of the HOTP code.
+     */
+    hotpCompute: function(key, ctr, length){
+        var hmac = new sjcl.misc.hmac(eb.misc.inputToBits(key), sjcl.hash.sha1);
+
+        // Ctr is 8 byte counter, big endian coded. Make sure it has correct length.
+        var ctrBits = eb.misc.inputToBits(ctr);
+        var ctrHex = eb.misc.inputToHex(ctr).trim();
+        var ctrHexLn = ctrHex.length;
+        if (ctrHexLn > 16){
+            throw new eb.exception.invalid("Counter value is too big");
+
+        } else if (ctrHexLn < 16){
+            ctrHex = ('0'.repeat(16-ctrHexLn)) + ctrHex;
+            ctrBits = sjcl.codec.hex.toBits(ctrHex);
+        }
+
+        // 1. step, compute HMAC.
+        var hs = hmac.mac(ctrBits);
+
+        // 2. dynamic truncation. hs has 160 bits, take lower 4.
+        // 0 <= offSet <= 15
+        var offset = sjcl.bitArray.extract(hs, 156, 4) & 0xf;
+
+        // Take low 31 bits from hs[offset]..hs[offset+3]
+        // 3. Convert to a number.
+        var snum = sjcl.bitArray.extract(hs, offset*8+1, 31);
+
+        // 4. mod length. 31 bit => maximum length is 8. 9 makes no real sense.
+        return snum % (Math.pow(10, length));
+    },
+
+    /**
+     * Generates QR code link.
+     * @param secret
+     * @param options - additional options affecting QR code link generation.
+     *      label: user name for HOTP auth,
+     *      web: HOTP login gateway identification,
+     *      issuer: HOTP account identification (e.g., enigmabridge, facebook, gmail, ....),
+     *      ctr: HOTP counter,
+     *      stripPadding: removes '=' from secret in the link, fixing problem with some HOTP authenticators.
+     *
+     * @returns {*}
+     */
+    hotpGetQrLink: function(secret, options){
+        var defaults = {
+            label: "EB",
+            web: "enigmabridge.com",
+            issuer: undefined,
+            ctr: 0,
+            digits: undefined,
+            stripPadding: false
+        };
+
+        options = $.extend(defaults, options || {});
+        var label = options && options.label;
+        var web = options && options.web;
+        var issuer = options && options.issuer;
+        var ctr = options && options.ctr;
+        var stripPadding = options && options.stripPadding;
+        var digits = options && options.digits;
+
+        // Construct the secret.
+        var secretBits = eb.misc.inputToBits(secret);
+        var secret32 = sjcl.codec.base32.fromBits(secretBits);
+        if (stripPadding){
+            secret32 = secret32.replace(/=/g,'');
+        }
+
+        return sprintf("otpauth://hotp/%s:%s?secret=%s%s%s%s",
+            encodeURIComponent(label),
+            encodeURIComponent(web),
+            secret32,
+            issuer !== undefined ? "&issuer="+encodeURIComponent(issuer) : "",
+            ctr !== undefined ? "&counter="+ctr : "",
+            digits !== undefined ? "&digits="+digits : ""
+        );
+    },
+
+    /**
+     * User context holder constructor.
+     * Can be used by a client to hold all important data about user for HOTP.
+     */
+    hotpUserAuthCtxInfo: function(){
+
+    },
+
+    /**
+     * HOTP general response constructor.
+     * @extends eb.comm.response
+     */
+    hotpResponse: function(){
+
+    },
+
+    /**
+     * General HOTP response parser constructor.
+     */
+    generalHotpParser: function(){
+
+    },
+
+    /**
+     * New HOTPCTX request builder constructor.
+     * @param options.
+     *      userId:  user ID aditional entropy. By default 0000000000000001
+     *      methods: flags for methods to include in context. USERAUTH_FLAG_HOTP, USERAUTH_FLAG_PASSWD.
+     *      hotp: {digits}: hotp digits in the template. HOTP code length.
+     *      passwd: {hash}: password hash used for authentication.
+     */
+    newHotpUserRequestBuilder: function(options){
+        this.configure(options);
+    },
+
+    /**
+     * New HOTPCTX response parser constructor.
+     */
+    newHotpUserResponseParser: function(){
+
+    },
+
+    /**
+     * HOTP user authentication request builder constructor.
+     */
+    hotpUserAuthRequestBuilder: function(){
+
+    },
+
+    /**
+     * HOTP user authentication response parser constructor.
+     */
+    hotpUserAuthResponseParser: function(){
+
+    },
+
+    /**
+     * Generator of update auth context request constructor.
+     */
+    updateAuthContextRequestBuilder: function(options){
+        this.configure(options);
+    },
+
+    /**
+     * Auth context update response parser constuctor.
+     */
+    updateAuthContextResponseParser: function(options){
+
+    },
+
+    /**
+     * Convenience function for building HOTP auth request.
+     * @param userId hex coded user ID, 8B.
+     * @param authCode hex coded auth code.
+     * @param userCtx user context, bitArray.
+     * @param method auth operation to perform, default=TLV_TYPE_HOTPCODE
+     */
+    getUserAuthRequest: function(userId, authCode, userCtx, method){
+        var builder = new eb.comm.hotp.hotpUserAuthRequestBuilder(userId);
+        return builder.build({
+            userId: userId,
+            authCode: authCode,
+            userCtx: userCtx,
+            authOperation: method || eb.comm.hotp.TLV_TYPE_HOTPCODE
+        });
+    },
+
+    /**
+     * General HOTP process data request constructor.
+     * @param uo    UserObject to use for the call.
+     * @abstract
+     * @private
+     */
+    hotpRequest: function(uo){
+        var av = eb.misc.absorbValue;
+        av(this, uo, 'uo');
+    },
+
+    /**
+     * Request for new HOTP CTX constructor.
+     * @param options
+     *      hotp:
+     *      {
+     *          uo    UserObject to use for the call.
+     *          userId user ID to create context for.
+     *          hotpLength number of digits
+     *      }
+     */
+    newHotpUserRequest: function(options){
+        options = options || {};
+        this.configure(options);
+    },
+
+    /**
+     * Request to authenticate HOTP user constructor.
+     * @param options
+     *      hotp:
+     *      {
+     *          uo UserObject to use for the call.
+     *          userId
+     *          userCtx
+     *          hotpCode
+     *          passwd
+     *      }
+     */
+    authHotpUserRequest: function(options){
+        options = options || {};
+        this.configure(options);
+    },
+
+    /**
+     * Request to update auth context constructor.
+     * @param options
+     *      hotp:
+     *      {
+     *          uo UserObject to use for the call.
+     *          userId
+     *          userCtx
+     *          TODO: complete
+     *      }
+     */
+    authContextUpdateRequest: function(options){
+        options = options || {};
+        this.configure(options);
+    }
+
+};
+
+/**
+ * HOTP user context holder.
+ */
+eb.comm.hotp.hotpUserAuthCtxInfo.inheritsFrom(eb.comm.base, {
+    /**
+     * User Auth context blob.
+     * Server parameter.
+     *
+     * Authentication:
+     *  - caller fills in with given user context. EB authenticates against this encrypted blob.
+     *  - after authentication, this blob is updated by the server.
+     *
+     * New HOTPCTX():
+     *  - caller leaves undefined.
+     *  - server generates new user context. Server stores this value.
+     */
+    userCtx: undefined,
+
+    /**
+     * User ID to authenticate / create new HOTPCTX for.
+     * Server parameter.
+     */
+    userId: undefined,
+
+    /**
+     * HOTP key - after new HOTPCTX(), server provides symmetric key for generating HOTP codes.
+     * Used to generate HOTP on the client side. HOTP client is initialized with this value.
+     * Client parameter.
+     *
+     * @output
+     */
+    hotpKey: undefined,
+
+    /**
+     * HOTP counter - counter value to generate HOTP codes on the client side.
+     * Client parameter.
+     *
+     * Should be increased by each successful attempt on the client side.
+     * By default is 0.
+     */
+    hotpCounter: 0,
+
+    /**
+     * HOTP code length. Length of the HOTP code in decimal digits.
+     * Reasonable values: 6,7,8.
+     */
+    hotpCodeLength: undefined,
+
+    /**
+     * Auth password hash.
+     */
+    userPasswdHash: undefined
+});
+
+/**
+ * HOTP EB response.
+ */
+eb.comm.hotp.hotpResponse.inheritsFrom(eb.comm.processDataResponse, {
+    /**
+     * bitArray with HOTP user context blob.
+     */
+    hotpUserCtx: undefined,
+
+    /**
+     * bitArray with UserID from the response.
+     * Filled in after match from given user ID has been confirmed (if given).
+     */
+    hotpUserId: undefined,
+
+    /**
+     * bitArray with HOTP key returned in new HOTPCTX()
+     */
+    hotpKey: undefined,
+
+    /**
+     * Numeric result of the auth ProcessData call.
+     */
+    hotpStatus: undefined,
+
+    /**
+     * If true, whole HOTP response was parsed successfully.
+     * In auth request it indicates context can be updated successfully.
+     * Flag added by the response parser.
+     * If false, exception was probably thrown during parsing.
+     */
+    hotpParsingSuccessful: false,
+
+    /**
+     * If true, server should update its user ctx for given user.
+     * Flag added by the response parser.
+     * If request fails from some reason, server still may need to update context - e.g., to
+     * store fail counter.
+     */
+    hotpShouldUpdateCtx: false,
+
+    toString: function(){
+        return sprintf("HOTPResponse{hotpStatus=0x%04X, userId: %s, hotpKeyLen: %s, UserCtx: %s, parsingOk: %s, sub:{%s}}",
+            this.hotpStatus,
+            this.hotpUserId !== undefined ? sjcl.codec.hex.fromBits(eb.comm.hotp.userIdToBits(this.hotpUserId)) : 'undefined',
+            this.hotpKey !== undefined ? sjcl.bitArray.bitLength(this.hotpKey) : 'undefined',
+            this.hotpUserCtx !== undefined ? sjcl.codec.hex.fromBits(this.hotpUserCtx) : 'undefined',
+            this.hotpParsingSuccessful,
+            eb.comm.hotp.hotpResponse.superclass.toString.call(this)
+        );
+    }
+});
+
+/**
+ * new HOTP user request builder.
+ */
+eb.comm.hotp.newHotpUserRequestBuilder.inheritsFrom(eb.comm.base, {
+    defaults: {
+        userId: undefined,
+        methods: eb.comm.hotp.USERAUTH_FLAG_HOTP,
+        hotp:{
+            digits: eb.comm.hotp.HOTP_DIGITS_DEFAULT
+        },
+        passwd:{
+            hash: undefined
+        }
+    },
+
+    /**
+     * Configures local object with the preferences.
+     * @param options
+     *      userId:  user ID aditional entropy. By default 0000000000000001
+     *      methods: flags for methods to include in context. USERAUTH_FLAG_HOTP, USERAUTH_FLAG_PASSWD.
+     *      hotp: {digits}: hotp digits in the template. HOTP code length.
+     *      passwd: {hash}: password hash used for authentication.
+     */
+    configure: function(options){
+        if (options) {
+            this.defaults = $.extend(true, this.defaults, options || {});
+        }
+    },
+
+    /**
+     * New HOTCTX request builder.
+     * @param options
+     *      userId:  user ID aditional entropy. By default 0000000000000001
+     *      methods: flags for methods to include in context. USERAUTH_FLAG_HOTP, USERAUTH_FLAG_PASSWD.
+     *      hotp: {digits}: hotp digits in the template. HOTP code length.
+     *      passwd: {hash}: password hash used for authentication.
+     * @returns {*}
+     */
+    build: function(options){
+        this.configure(options);
+
+        var ba = sjcl.bitArray;
+        var hex = sjcl.codec.hex;
+
+        // Part 1 - auth context, encrypt with random password, template.
+        var tpl = eb.comm.hotp.getCtxTemplate(this.defaults);
+        var userAuthCtxPrepared = eb.comm.hotp.prepareUserContext(tpl);
+
+        // Part 2 - auth context, unprotected
+        var userAuthCtxUserID = ""; // extract from template
+        var userAuthCtxUserIDBits = hex.toBits(userAuthCtxUserID);
+        var userAuthCtxBits = ba.concat(userAuthCtxUserIDBits, tpl);
+
+        var request = hex.toBits(sprintf("%02x", eb.comm.hotp.TLV_TYPE_USERAUTHCONTEXT));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(userAuthCtxPrepared)/8)));
+        request = ba.concat(request, userAuthCtxPrepared);
+
+        request = ba.concat(request, hex.toBits(sprintf("%02x", eb.comm.hotp.TLV_TYPE_NEWAUTHCONTEXT)));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(userAuthCtxBits)/8)));
+        request = ba.concat(request, userAuthCtxBits);
+
+        return request;
+    }
+});
+
+/**
+ * HOTP user auth request builder.
+ */
+eb.comm.hotp.hotpUserAuthRequestBuilder.inheritsFrom(eb.comm.base, {
+    /**
+     * Auth request builder.
+     * @param options
+     *      authCode: hex coded auth code. In case of HOTP, it should be the output of hotpCodeToHexCoded()
+     *      userId: hex coded user ID, 8B.
+     *      userCtx: user context, bitArray.
+     *      authOperation: auth operation to perform, default=TLV_TYPE_HOTPCODE
+     * @returns {*}
+     */
+    build: function(options){
+        // ref: performTestUserAuthVerification
+        var ba = sjcl.bitArray;
+        var hex = sjcl.codec.hex;
+
+        // Options.
+        var defaults = {
+            authCode: undefined,
+            userId: undefined,
+            userCtx: undefined,
+            authOperation: eb.comm.hotp.TLV_TYPE_HOTPCODE
+        };
+        options = $.extend(defaults, options || {});
+        var userId = options && options.userId;
+        var authCode = options && options.authCode;
+        var userCtx = options && options.userCtx;
+        var authOperation = options && options.authOperation;
+        if (!userId || !authCode || !userCtx || !authOperation){
+            throw new eb.exception.invalid("User ID / HOTP / userCtx / authOperation code undefined");
+        }
+
+        var tlvOp, methods;
+        if (authOperation == eb.comm.hotp.TLV_TYPE_HOTPCODE){
+            tlvOp = eb.comm.hotp.TLV_TYPE_HOTPCODE;
+            methods = eb.comm.hotp.USERAUTH_FLAG_HOTP;
+        } else if (authOperation == eb.comm.hotp.TLV_TYPE_PASSWORDHASH){
+            tlvOp = eb.comm.hotp.TLV_TYPE_PASSWORDHASH;
+            methods = eb.comm.hotp.USERAUTH_FLAG_PASSWD;
+        } else {
+            throw new eb.exception.invalid("Unrecognized authentication method");
+        }
+
+        var verificationCode = eb.comm.hotp.userIdToHex(userId) + eb.misc.inputToHex(authCode);
+        var verificationCodeBits = hex.toBits(verificationCode);
+        var userCtxBits = eb.misc.inputToBits(userCtx);
+
+        var request = hex.toBits(sprintf("%02x", eb.comm.hotp.TLV_TYPE_USERAUTHCONTEXT));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(userCtxBits)/8)));
+        request = ba.concat(request, userCtxBits);
+
+        request = ba.concat(request, hex.toBits(sprintf("%02x", tlvOp)));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(verificationCodeBits)/8)));
+        request = ba.concat(request, verificationCodeBits);
+
+        return request;
+    }
+});
+
+/**
+ * Generator of update auth context request
+ */
+eb.comm.hotp.updateAuthContextRequestBuilder.inheritsFrom(eb.comm.base, {
+    defaults: {
+        userId: undefined,
+        userCtx: undefined,
+        targetMethod: undefined,
+        passwd: undefined
+    },
+
+    /**
+     * Configures local object with the preferences.
+     * @param options
+     *      userId:  user ID aditional entropy. By default 0000000000000001
+     *      userCtx: user context to update.
+     *      targetMethod: method to update
+     *      passwd: a new password hash to set in case of targetMethod == USERAUTH_FLAG_PASSWD
+     */
+    configure: function(options){
+        if (options) {
+            this.defaults = $.extend(true, this.defaults, options || {});
+        }
+    },
+
+    build: function(options){
+        // ref: performUpdateAuthCtx
+        var ba = sjcl.bitArray;
+        var hex = sjcl.codec.hex;
+        this.configure(options);
+
+        var userId = this.defaults.userId;
+        var userCtx = this.defaults.userCtx;
+        var passwd = this.defaults.passwd;
+        var targetMethod = this.defaults.targetMethod;
+        if (!userId || !userCtx || !targetMethod){
+            throw new eb.exception.invalid("User ID / userCtx / targetMethod undefined");
+        }
+        if (targetMethod == eb.comm.hotp.USERAUTH_FLAG_PASSWD && passwd === undefined){
+            throw new eb.exception.invalid("Password update method but password hash is undefined");
+        }
+
+        // Build update context request
+        var userCtxBits = eb.misc.inputToBits(userCtx);
+        var updateCtx = [];
+
+        // User ID
+        updateCtx = ba.concat(updateCtx, eb.comm.hotp.userIdToBits(userId));
+
+        // Method #1 - HOTP
+        if (targetMethod == eb.comm.hotp.USERAUTH_FLAG_HOTP){
+            updateCtx = ba.concat(updateCtx, hex.toBits(sprintf("%02x0000", eb.comm.hotp.USER_AUTH_TYPE_HOTP)));
+        }
+
+        // Method #2 - Password
+        if (targetMethod == eb.comm.hotp.USERAUTH_FLAG_PASSWD){
+            var passwordBits = eb.misc.inputToBits(passwd);
+            updateCtx = ba.concat(updateCtx, hex.toBits(sprintf("%02x%04x", eb.comm.hotp.USER_AUTH_TYPE_PASSWD, ba.bitLength(passwordBits)/8)));
+            updateCtx = ba.concat(updateCtx, passwordBits);
+        }
+
+        // Method #3 - Global attempts
+        if (targetMethod == eb.comm.hotp.USERAUTH_FLAG_GLOBALTRIES){
+            updateCtx = ba.concat(updateCtx, hex.toBits(sprintf("%02x0000", eb.comm.hotp.USER_AUTH_TYPE_GLOBALTRIES)));
+        }
+
+        // Request itself.
+        var request = [];
+        request = ba.concat(request, hex.toBits(sprintf("%02x", eb.comm.hotp.TLV_TYPE_USERAUTHCONTEXT)));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(userCtxBits)/8)));
+        request = ba.concat(request, userCtxBits);
+
+        request = ba.concat(request, hex.toBits(sprintf("%02x", eb.comm.hotp.TLV_TYPE_UPDATEAUTHCONTEXT)));
+        request = ba.concat(request, hex.toBits(sprintf("%04x", ba.bitLength(updateCtx)/8)));
+        request = ba.concat(request, updateCtx);
+
+        return request;
+    }
+});
+
+/**
+ * General HOTP response parser, base class.
+ */
+eb.comm.hotp.generalHotpParser.inheritsFrom(eb.comm.base, {
+    response: undefined,
+
+    /**
+     * General parsing routine for HOTP responses.
+     *
+     * @param data
+     * @param resp response to fill in with parsed data, takes preference to options.response
+     * @param options
+     *      tlvOp: HOTP operation to expect
+     *      methods: auth methods to parse from the response (default=0)
+     *      bIsLocalCtxUpdate: if set to YES, hotp key is updated in ctx (default=YES)
+     *      userId: user ID to match against response user ID (default=undefined, no matching)
+     *      response: response to fill in with parsed data. (default=undefined, new one is created)
+     *
+     * @returns {*|eb.comm.response|null|request|number|Object}
+     */
+    parse: function(data, resp, options){
+        // ref: processUserAuthResponse
+        var ba = sjcl.bitArray;
+        var offset = 0;
+
+        // Options.
+        var defaults = {
+            tlvOp: undefined,
+            methods: 0x0,
+            bIsLocalCtxUpdate: true,
+            userId: undefined,
+            response: undefined
+        };
+
+        options = $.extend(defaults, options || {});
+        var tlvOp = options && options.tlvOp;
+        var methods = options && options.methods;
+        var bIsLocalCtxUpdate = options && options.bIsLocalCtxUpdate;
+        var givenUserId = options && options.userId;
+        var response = resp || (options && options.response);
+        response = response || new eb.comm.hotp.hotpResponse();
+        if (tlvOp === undefined){
+            throw new eb.exception.corrupt("Main TLV operation undefined");
+        }
+
+        this.response = response;
+        response.hotpStatus = 0x0;
+        response.hotpParsingSuccessful = false;
+        response.hotpShouldUpdateCtx = false;
+
+        // Check for the plainData length = 0 was here, but protected data does not contain plain data,
+        // it was moved to a different field in the response message so we don't check it here,
+        // while original code in processUserAuthResponse does.
+        
+        // Check main tag value.
+        var tag = ba.extract(data, offset, 8);
+        offset += 8;
+        if (tag != eb.comm.hotp.TLV_TYPE_USERAUTHCONTEXT){
+            response.hotpStatus = eb.comm.status.SW_INVALID_TLV_FORMAT;
+            throw new eb.exception.corrupt("Unrecognized TLV tag");
+        }
+
+        // Extract user context.
+        var userCtxLen = ba.extract(data, offset, 16);
+        offset += 16;
+        response.hotpUserCtx = ba.bitSlice(data, offset, offset+userCtxLen*8);
+        offset += userCtxLen*8;
+
+        // Main TLV op type
+        var msgTlv = ba.extract(data, offset, 8);
+        offset += 8;
+        if (msgTlv != tlvOp){
+            response.hotpStatus = eb.comm.status.SW_INVALID_TLV_FORMAT;
+            throw new eb.exception.corrupt("Main TLV tag does not match");
+        }
+
+        // Response
+        var responseLen = ba.extract(data, offset, 16);
+        offset += 16;
+
+        // User ID
+        var requestUserId = ba.bitSlice(data, offset, offset+eb.comm.hotp.USERAUTHCTX_MAIN_USERID_LENGTH*8);
+        offset += eb.comm.hotp.USERAUTHCTX_MAIN_USERID_LENGTH*8;
+
+        // Compare set user id.
+        if (givenUserId){
+            if (!ba.equal(eb.comm.hotp.userIdToBits(givenUserId), requestUserId)){
+                response.hotpStatus = eb.comm.status.SW_AUTH_MISMATCH_USER_ID;
+                throw new eb.exception.corrupt("User ID mismatch");
+            }
+        }
+        response.hotpUserId = requestUserId;
+
+        // Methods
+        var methodTag, dataReturnLen;
+
+        // Method #1
+        if ((methods & eb.comm.hotp.USERAUTH_FLAG_HOTP) > 0){
+            methodTag = ba.extract(data, offset, 8);
+            offset += 8;
+            if (methodTag != eb.comm.hotp.USER_AUTH_TYPE_HOTP){
+                response.hotpStatus = eb.comm.status.SW_AUTHMETHOD_UNKNOWN;
+                throw new eb.exception.corrupt("Invalid method tag");
+            }
+
+            dataReturnLen = ba.extract(data, offset, 16);
+            offset += 16;
+            if (bIsLocalCtxUpdate){
+                response.hotpKey = ba.bitSlice(data, offset, offset+dataReturnLen*8);
+
+            } else if (dataReturnLen != 0) {
+                throw new eb.exception.corrupt("Should not contain data");
+            }
+
+            offset += dataReturnLen*8;
+        }
+
+        // Method #2
+        if ((methods & eb.comm.hotp.USERAUTH_FLAG_PASSWD) > 0){
+            methodTag = ba.extract(data, offset, 8);
+            offset += 8;
+            if (methodTag != eb.comm.hotp.USER_AUTH_TYPE_PASSWD){
+                response.hotpStatus = eb.comm.status.SW_AUTHMETHOD_UNKNOWN;
+                throw new eb.exception.corrupt("Invalid method tag");
+            }
+
+            dataReturnLen = ba.extract(data, offset, 16);
+            offset += 16;
+            if (dataReturnLen != 0) {
+                throw new eb.exception.corrupt("Should not contain data");
+            }
+        }
+
+        // Method #3
+        if ((methods & eb.comm.hotp.USERAUTH_FLAG_GLOBALTRIES) > 0){
+            methodTag = ba.extract(data, offset, 8);
+            offset += 8;
+            if (methodTag != eb.comm.hotp.USER_AUTH_TYPE_GLOBALTRIES){
+                response.hotpStatus = eb.comm.status.SW_AUTHMETHOD_UNKNOWN;
+                throw new eb.exception.corrupt("Invalid method tag");
+            }
+
+            dataReturnLen = ba.extract(data, offset, 16);
+            offset += 16;
+            if (dataReturnLen != 0) {
+                throw new eb.exception.corrupt("Should not contain data");
+            }
+        }
+
+        if ((offset + 16) != ba.bitLength(data)){
+            throw new eb.exception.corrupt("Data length invalid");
+        }
+
+        response.hotpStatus = ba.extract(data, offset, 16);
+        offset += 16;
+
+        response.hotpShouldUpdateCtx = true;
+        response.hotpParsingSuccessful = true;
+        return response;
+    }
+});
+
+/**
+ * new HOTP user response parser.
+ */
+eb.comm.hotp.newHotpUserResponseParser.inheritsFrom(eb.comm.hotp.generalHotpParser, {
+    parse: function(data, resp, options){
+        options = options || {};
+        options.tlvOp = eb.comm.hotp.TLV_TYPE_NEWAUTHCONTEXT;
+        options.bIsLocalCtxUpdate = true;
+        options.userId = undefined;
+        options.methods = options.methods || eb.comm.hotp.USERAUTH_FLAG_HOTP;
+
+        return eb.comm.hotp.newHotpUserResponseParser.superclass.parse.call(this, data, resp, options);
+    }
+});
+
+/**
+ * HOTP user auth response parser.
+ */
+eb.comm.hotp.hotpUserAuthResponseParser.inheritsFrom(eb.comm.hotp.generalHotpParser, {
+    parse: function(data, resp, options){
+        options = options || {};
+        options.bIsLocalCtxUpdate = false;
+        options.tlvOp = options.tlvOp || eb.comm.hotp.TLV_TYPE_HOTPCODE;
+        options.methods = options.methods || eb.comm.hotp.USERAUTH_FLAG_HOTP;
+
+        return eb.comm.hotp.hotpUserAuthResponseParser.superclass.parse.call(this, data, resp, options);
+    }
+});
+
+/**
+ * HOTP user auth response parser.
+ */
+eb.comm.hotp.updateAuthContextResponseParser.inheritsFrom(eb.comm.hotp.generalHotpParser, {
+    parse: function(data, resp, options){
+        options = options || {};
+        options.bIsLocalCtxUpdate = true;
+        options.tlvOp = eb.comm.hotp.TLV_TYPE_UPDATEAUTHCONTEXT;
+
+        return eb.comm.hotp.updateAuthContextResponseParser.superclass.parse.call(this, data, resp, options);
+    }
+});
+
+/**
+ * HOTP request, base class.
+ */
+eb.comm.hotp.hotpRequest.inheritsFrom(eb.comm.processData, {
+    /**
+     * UserObject to use for the call.
+     * TODO: once ready, move to processData request as comm keys will be stored there.
+     */
+    uo: undefined,
+
+    /**
+     * User ID to use.
+     */
+    userId: undefined,
+
+    // Done & fail callback hooking.
+    doneCallbackOrig: function(response, requestObj, data){},
+    failCallbackOrig: function(failType, data){},
+
+    done: function(x){
+        this.doneCallbackOrig = x;
+        eb.comm.hotp.hotpRequest.superclass.done.call(this, this.subDone);
+        return this;
+    },
+
+    fail: function(x){
+        this.failCallbackOrig = x;
+        eb.comm.hotp.hotpRequest.superclass.fail.call(this, this.subFail);
+        return this;
+    },
+
+    /**
+     * Process configuration from the config object.
+     * @param configObject object with the configuration.
+     */
+    configure: function(configObject){
+        if (!configObject){
+            this._log("Invalid config object");
+            return;
+        }
+
+        // Configure with parent.
+        eb.comm.hotp.hotpRequest.superclass.configure.call(this, configObject);
+
+        // Configure this.
+        if ('hotp' in configObject){
+            this.configureHotp(configObject.hotp);
+        }
+    },
+
+    /**
+     * Configuration helper for HOTP data.
+     * Called from configure() and build().
+     * @param hotpData
+     */
+    configureHotp: function(hotpData){
+        var ak = eb.misc.absorbKey;
+        ak(this, hotpData, "uo");
+        ak(this, hotpData, "userId");
+    },
+
+    /**
+     * Response object is HOTP response.
+     * After data unwrap, it will be processed further.
+     *
+     * @returns {eb.comm.hotp.hotpResponse}
+     */
+    getResponseObject: function(){
+        return new eb.comm.hotp.hotpResponse();
+    },
+
+    /**
+     * Called when underlying parser finished processing. Post processing here.
+     *
+     * @param response
+     * @param requestObj
+     * @param data
+     * @private
+     */
+    subDone: function(response, requestObj, data){
+        if (this.doneCallbackOrig){
+            this.doneCallbackOrig(response, requestObj, data);
+        }
+    },
+
+    /**
+     * Called when underlying api request failed. Post processing here.
+     * @param failType
+     * @param data
+     */
+    subFail: function(failType, data){
+        if (this.failCallbackOrig){
+            this.failCallbackOrig(failType, data);
+        }
+    }
+});
+
+/**
+ * New HOTP user request.
+ * TODO: For configuration, new configuration builder can be implemented.
+ */
+eb.comm.hotp.newHotpUserRequest.inheritsFrom(eb.comm.hotp.hotpRequest, {
+    /**
+     * Configuration object given in construction / configure / build phases
+     */
+    authConfig: $.extend(true, {}, eb.comm.hotp.newHotpUserRequestBuilder.defaults),
+
+    /**
+     * Process HOTP configuration.
+     * @param hotpObject hotp object
+     */
+    configureHotp: function(hotpObject){
+        // Configure with parent.
+        eb.comm.hotp.newHotpUserRequest.superclass.configureHotp.call(this, hotpObject);
+
+        // authConfig
+        this.authConfig = $.extend(true, this.authConfig, hotpObject || {});
+    },
+
+    /**
+     * Initializes state and builds request
+     */
+    build: function(configObject){
+        this._log("Building request body");
+        if (configObject && 'hotp' in configObject){
+            this.configureHotp(configObject.hotp);
+        }
+
+        // Build the new HOTPCTX() request.
+        var builder = new eb.comm.hotp.newHotpUserRequestBuilder(this.authConfig);
+        var upperRequest = builder.build();
+
+        //var upperRequest = eb.comm.hotp.getNewUserRequest(this.userId, this.hotpLength);
+        this._log("New HOTPCTX request: " + sjcl.codec.hex.fromBits(upperRequest));
+
+        // Request data to lower process data builder.
+        eb.comm.hotp.newHotpUserRequest.superclass.build.call(this, [], upperRequest);
+    },
+
+    /**
+     * Process result, unwrapped by the underlying response parser.
+     * @param response
+     * @param requestObj
+     * @param data
+     */
+    subDone: function(response, requestObj, data){
+        var parser = new eb.comm.hotp.newHotpUserResponseParser(this.authConfig);
+        var options = {};
+        if (this.authConfig && this.authConfig.methods){
+            options.methods = this.authConfig.methods;
+        }
+
+        try {
+            this.response = response = parser.parse(response.protectedData, response, options);
+            if (response.hotpStatus == eb.comm.status.SW_STAT_OK) {
+                if (this.doneCallbackOrig) {
+                    this.doneCallbackOrig(response, requestObj, data);
+                }
+                return;
+            }
+        } catch(e){
+            data.hotpException = e;
+        }
+
+        if (this.failCallbackOrig){
+            this.failCallbackOrig(eb.comm.status.PDATA_FAIL_RESPONSE_FAILED, data);
+        }
+    }
+});
+
+/**
+ * HOTP user auth request.
+ */
+eb.comm.hotp.authHotpUserRequest.inheritsFrom(eb.comm.hotp.hotpRequest, {
+    userCtx: undefined,
+    hotpCode: undefined,
+    hotpLength: eb.comm.hotp.HOTP_DIGITS_DEFAULT,
+    passwd: undefined,
+
+    // Private variables, request configures response parser.
+    authMethod: undefined,
+    authFlag: undefined,
+
+    /**
+     * Process HOTP configuration.
+     * @param hotpObject hotp object
+     */
+    configureHotp: function(hotpObject){
+        // Configure with parent.
+        eb.comm.hotp.authHotpUserRequest.superclass.configureHotp.call(this, hotpObject);
+
+        // Configure this.
+        var ak = eb.misc.absorbKey;
+        ak(this, hotpObject, "userCtx");
+        ak(this, hotpObject, "hotpCode");
+        ak(this, hotpObject, "hotpLength");
+        ak(this, hotpObject, "passwd");
+    },
+
+    /**
+     * Initializes state and builds request
+     */
+    build: function(configObject){
+        this._log("Building request body");
+        if (configObject && 'hotp' in configObject){
+            this.configureHotp(configObject.hotp);
+        }
+
+        // Current limitation - only one method at a time
+        if (this.passwd && this.passwd.length > 0 && this.hotpCode){
+            this._log("Multiple authentication methods were required.");
+            throw new eb.exception.invalid("Authentication supports only one authentication method at a time");
+        }
+
+        var authCode;
+        if (this.passwd && this.passwd.length > 0){
+            authCode = this.passwd;
+            this.authMethod = eb.comm.hotp.TLV_TYPE_PASSWORDHASH;
+            this.authFlag = eb.comm.hotp.USERAUTH_FLAG_PASSWD;
+            this._log("Using Password authentication");
+
+        } else if (this.hotpCode) {
+            authCode = eb.comm.hotp.hotpCodeToHexCoded(this.hotpCode, this.hotpLength);
+            this.authMethod = eb.comm.hotp.TLV_TYPE_HOTPCODE;
+            this.authFlag = eb.comm.hotp.USERAUTH_FLAG_HOTP;
+            this._log("Using HOTP authentication");
+
+        } else {
+            throw new eb.exception.invalid("No authentication data given");
+        }
+
+        // Build the auth request.
+        var upperRequest = eb.comm.hotp.getUserAuthRequest(
+            this.userId,
+            authCode,
+            this.userCtx,
+            this.authMethod);
+
+        this._log("HOTP Auth request: " + sjcl.codec.hex.fromBits(upperRequest));
+
+        // Request data to lower process data builder.
+        eb.comm.hotp.authHotpUserRequest.superclass.build.call(this, [], upperRequest);
+    },
+
+    /**
+     * Process result, unwrapped by the underlying response parser.
+     * @param response
+     * @param requestObj
+     * @param data
+     */
+    subDone: function(response, requestObj, data){
+        var parser = new eb.comm.hotp.hotpUserAuthResponseParser();
+        var options = {
+            userId: this.userId,
+            tlvOp:  this.authMethod,
+            methods:this.authFlag
+        };
+
+        try {
+            this.response = response = parser.parse(response.protectedData, response, options);
+            if (response.hotpStatus == eb.comm.status.SW_STAT_OK) {
+                if (this.doneCallbackOrig) {
+                    this.doneCallbackOrig(response, requestObj, data);
+                }
+                return;
+            }
+
+        } catch(e){
+            data.hotpException = e;
+        }
+
+        if (this.failCallbackOrig){
+            data.response = this.response;
+            this.failCallbackOrig(eb.comm.status.PDATA_FAIL_RESPONSE_FAILED, data);
+        }
+    }
+});
+
+/**
+ * Request to update auth context.
+ */
+eb.comm.hotp.authContextUpdateRequest.inheritsFrom(eb.comm.hotp.hotpRequest, {
+    userCtx: undefined,
+    passwd: undefined,
+    method: undefined,
+
+    /**
+     * Process HOTP configuration.
+     * @param hotpObject hotp object
+     */
+    configureHotp: function(hotpObject){
+        // Configure with parent.
+        eb.comm.hotp.authContextUpdateRequest.superclass.configureHotp.call(this, hotpObject);
+
+        // Configure this.
+        var ak = eb.misc.absorbKey;
+        ak(this, hotpObject, "userCtx");
+        ak(this, hotpObject, "method");
+        ak(this, hotpObject, "passwd");
+    },
+
+    /**
+     * Initializes state and builds request
+     */
+    build: function(configObject){
+        this._log("Building request body");
+        if (configObject && 'hotp' in configObject){
+            this.configureHotp(configObject.hotp);
+        }
+
+        if (this.method === undefined){
+            throw new eb.exception.invalid("Update method not defined");
+        }
+        if (this.userId === undefined || this.userCtx === undefined){
+            throw new eb.exception.invalid("UserID / UserCtx not defined");
+        }
+        if (this.method === eb.comm.hotp.USERAUTH_FLAG_PASSWD && this.passwd === undefined){
+            throw new eb.exception.invalid("Update method is password but password is undefined");
+        }
+
+        // Build the auth request.
+        var reqBuilder = new eb.comm.hotp.updateAuthContextRequestBuilder({
+            userId: this.userId,
+            userCtx: this.userCtx,
+            targetMethod: this.method,
+            passwd: this.passwd
+        });
+
+        var upperRequest = reqBuilder.build();
+
+        this._log("Auth context update request: " + sjcl.codec.hex.fromBits(upperRequest));
+
+        // Request data to lower process data builder.
+        eb.comm.hotp.authContextUpdateRequest.superclass.build.call(this, [], upperRequest);
+    },
+
+    /**
+     * Process result, unwrapped by the underlying response parser.
+     * @param response
+     * @param requestObj
+     * @param data
+     */
+    subDone: function(response, requestObj, data){
+        var parser = new eb.comm.hotp.updateAuthContextResponseParser();
+        var options = {
+            userId: this.userId,
+            methods:this.method
+        };
+
+        try {
+            this.response = response = parser.parse(response.protectedData, response, options);
+            if (response.hotpStatus == eb.comm.status.SW_STAT_OK) {
+                if (this.doneCallbackOrig) {
+                    this.doneCallbackOrig(response, requestObj, data);
+                }
+                return;
+            }
+
+        } catch(e){
+            data.hotpException = e;
+        }
+
+        if (this.failCallbackOrig){
+            data.response = this.response;
+            this.failCallbackOrig(eb.comm.status.PDATA_FAIL_RESPONSE_FAILED, data);
+        }
     }
 });
 
