@@ -19,6 +19,19 @@ function cryptoSelected(x){
 
 }
 
+function successBg(x, success){
+	if (success === undefined){
+		x.removeClass('successBg');
+		x.removeClass('failedBg');
+	} else if (success){
+		x.addClass('successBg');
+		x.removeClass('failedBg');
+	} else {
+		x.removeClass('successBg');
+		x.addClass('failedBg');
+	}
+}
+
 function rawToHexCoded(e, evt) {
 	var x = e.val();
 	return eb.codec.utf8.toHex(x);
@@ -84,6 +97,29 @@ function pkcs7unpad(data){
 
 function pkcs15unpad(data, blockLen){
 	return sjcl.codec.hex.fromBits(eb.padding.pkcs15.unpad(sjcl.codec.hex.toBits(data), blockLen));
+}
+
+function connectionError(data){
+	var statusElem = $('#responsetime');
+	statusElem.val("Connection error\n" + data.requestObj.requestTime + ' ms');
+	successBg(statusElem, false);
+}
+
+function finished(data){
+	var statusElem = $('#responsetime');
+	var responseStatus = data.response.statusCode;
+
+	var status = sprintf("0x%04X", responseStatus);
+	if (responseStatus == eb.comm.status.SW_STAT_OK){
+		status += ' - OK';
+	} else {
+		status += ' - Failed';
+	}
+
+	status += "\n" + data.requestObj.requestTime + ' ms';
+
+	statusElem.val(status);
+	successBg(statusElem, responseStatus == eb.comm.status.SW_STAT_OK);
 }
 
 $(function()
@@ -188,9 +224,11 @@ $(function()
 				var logger = function(msg) {
 					append_message(msg);
 				};
+
+				var statusElem = $('#responsetime');
 				$('#responsehex').val("");
 				$('#responseraw').val("");
-				$('#responsetime').val("");
+				statusElem.val("");
 
 				// Request configuration generation.
 				var endpoint = undefined;
@@ -270,18 +308,27 @@ $(function()
 				request.logger = logger;
 
 				// Callbacks settings.
-				request.done(function(response, requestObj, jqXHR) {
+				request.done(function(response, requestObj, data) {
 					$('#responsehex').val(h.fromBits(response.protectedData));
 					$('#responseraw').val(JSON.stringify(requestObj.rawResponse));
+					finished(data);
 
-				}).fail(function(failType, jqXHR, textStatus, errorThrown, requestObj){
-					console.log("fail! type=" + failType + ", error=" + errorThrown);
+				}).fail(function(failType, data){
+					console.log("fail! type=" + failType);
 					$('#responsehex').val(" - ");
-					$('#responseraw').val(JSON.stringify(requestObj.rawResponse));
+					$('#responseraw').val(JSON.stringify(data.response));
 
-				}).always(function(request){
-					console.log("it is over...");
-					$('#responsetime').val(request.requestTime + " ms");
+					if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
+						finished(data);
+
+					} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
+						log("Connection error");
+						connectionError(data);
+					}
+
+				}).always(function(request, data){
+					console.log("Processing finished");
+
 				});
 
 				// Build the request so we can display request in the form.
@@ -289,6 +336,10 @@ $(function()
 				set_request(sprintf("URL: %s\n%s",
 					request.getApiUrl(),
 					JSON.stringify(request.getApiRequestData())));
+
+				// Status - loading
+				statusElem.val('');
+				successBg(statusElem);
 
 				// Do the call.
 				request.doRequest();
