@@ -181,12 +181,10 @@ $(function()
 		odata.keyup();
 	});
 	$("#one1k").click(function(){
-		//odata.val(pkcs15pad("01", 1024/8));
 		odata.val("01");
 		odata.keyup();
 	});
 	$("#enigma1k").click(function(){
-		//odata.val(pkcs15pad(eb.codec.utf8.toHex("Enigma"), 1024/8));
 		odata.val(eb.codec.utf8.toHex("Enigma"));
 		odata.keyup();
 	});
@@ -197,12 +195,10 @@ $(function()
 		odata.keyup();
 	});
 	$("#one2k").click(function(){
-		//odata.val(pkcs15pad("01", 2048/8));
 		odata.val("01");
 		odata.keyup();
 	});
 	$("#enigma2k").click(function(){
-		//odata.val(pkcs15pad(eb.codec.utf8.toHex("Enigma"), 2048/8));
 		odata.val(eb.codec.utf8.toHex("Enigma"));
 		odata.keyup();
 	});
