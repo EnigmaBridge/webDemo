@@ -163,11 +163,11 @@ $(function()
 	// Data filling.
 	// AES
 	$("#allzeroes").click(function(){
-		odata.val("00".repeat(16));
+		odata.val("00".repeat(8));
 		odata.keyup();
 	});
 	$("#lowercasea").click(function(){
-		rdata.val("a".repeat(16));
+		rdata.val("a".repeat(8));
 		rdata.keyup();
 	});
 	$("#testvector").click(function(){
