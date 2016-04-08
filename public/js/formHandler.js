@@ -297,6 +297,12 @@ $(function()
 					logger("Request was padded to 2048 bits (PKCS #1.5): " + inputData);
 				}
 
+				// PKCS 7 padding
+				if ($('#aes256').is(':checked')){
+					inputData = pkcs7pad(inputData);
+					logger("Request was padded to 128 bits block size (PKCS #7): " + inputData);
+				}
+
 				var plainData = h.toBits("");
 				var requestData = h.toBits(inputData || "");
 
