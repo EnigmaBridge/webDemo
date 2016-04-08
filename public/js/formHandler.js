@@ -181,7 +181,7 @@ $(function()
 		odata.keyup();
 	});
 	$("#one1k").click(function(){
-		odata.val("01");
+		odata.val("42");
 		odata.keyup();
 	});
 	$("#enigma1k").click(function(){
@@ -195,7 +195,7 @@ $(function()
 		odata.keyup();
 	});
 	$("#one2k").click(function(){
-		odata.val("01");
+		odata.val("42");
 		odata.keyup();
 	});
 	$("#enigma2k").click(function(){
