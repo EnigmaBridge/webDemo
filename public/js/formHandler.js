@@ -109,14 +109,15 @@ function finished(data){
 	var statusElem = $('#responsetime');
 	var responseStatus = data.response.statusCode;
 
-	var status = sprintf("0x%04X", responseStatus);
+	/*var status = sprintf("0x%04X", responseStatus); */
+        var status = 'Response';
 	if (responseStatus == eb.comm.status.SW_STAT_OK){
 		status += ' - OK';
 	} else {
 		status += ' - Failed';
 	}
 
-	status += "\n" + data.requestObj.requestTime + ' ms';
+	status += "\nin " + data.requestObj.requestTime + ' ms';
 
 	statusElem.val(status);
 	successBg(statusElem, responseStatus == eb.comm.status.SW_STAT_OK);
