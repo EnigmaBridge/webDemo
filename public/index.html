@@ -36,10 +36,10 @@
 			<div class="collapse navbar-collapse navbar-1">
 				<ul class="site-navigation nav navbar-nav">
 					<li>
-						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" id="pl-undefined" onclick="scrollToTarget('#generalcrypto')">Encryption</a>
+						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" id="pl-undefined" onclick="scrollToTarget('#generalcrypto')">Data Protection</a>
 					</li>
 					<li>
-						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" href="index.html">Passwords &amp; OTP</a>
+						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" href="index.html">Passwords</a>
 					</li>
 					<li>
 						<a class="fadeInDown animDelay1 animated ltc-rich-electric-blue" href="https://www.enigmabridge.com" id="pl-undefined2">Main Website</a>
@@ -62,7 +62,7 @@
 				Keep Control of Your Cloud </br>With Simple and Powerful Cloud Encryption Service	
 				</h3>
 				<div class="text-center">
-					<a class="btn btn-clean  btn-rich-electric-blue btn-xl" onclick="scrollToTarget('#generalcrypto')">Test Encryption</a>
+					<a class="btn btn-clean  btn-rich-electric-blue btn-xl" onclick="scrollToTarget('#generalcrypto')">Test Data Protection</a>
 				</div>
 			</div>
 		</div><a id="scroll-hero" class="btn-dwn" href="#"><span class="fa fa-chevron-down"></span></a>
@@ -76,10 +76,22 @@
 		<div class="row">
 			<div class="col-sm-12">
 				<h2 class="mg-md tc-rich-electric-blue">
-					<strong>General Encryption Functions</strong>
+					<strong>Data Protection Functions</strong>
 				</h2>
 				<p class="mg-md">
-					We have built this page to allow new users testing of Enigma Bridge service with a few basic cryptographic functions. Please select a function, data you want to process and a server for processing.<br /><br />Once you press the “Process” button, you will see the command that was actually sent to Enigma Bridge, a response latency, as well as the result.<br /><br />A detailed log of the last processing is also available further down on this page.
+					We have built this test site to allow you test the Enigma Bridge service. This page demonstrates
+					data protection functions (use top menu for other tests).<br />
+					<br />Please follow three simple steps to test Enigma Bridge: 1. select a function, 2. select a test
+					data (or enter your own), 3. select one of the service sites.<br />
+					<br />Once you click the “Protect Your Data Now” button, you will see the protected data. The form also
+					shows what was sent to the Enigma Bridge service and was was returned so that developers can easily
+					test it for themselves.<br />
+					<br />You can also inspect a detailed processing log further down this page.
+				</p>
+				<p>
+					<i>Note: if you are interested in details of processing, a detailed processing log is further down
+						this page and a more complex test site is at <a class="ltc-rich-electric-blue"
+						href="https://expert.enigmabridge.com" target="_blank">https://expert.enigmabridge.com</a>.</i>
 				</p>
 				<div class="divider-h">
 					<span class="divider"></span>
@@ -89,54 +101,56 @@
 						<div class="col-sm-2">
 							<div class="form-group">
 								<label class="mg-clear">
-									Function
+									Step 1: Function
 								</label>
 							</div>
+							<hr/>
 							<p>
 							</p>
 							<div class="form-group">
 								<label>
-									Data encrypt
+									Secrecy
 								</label>
 							</div>
 							<div class="radio">
 								<label>
-									<input type="radio" name="radioFunction" value="option1" id="aes256" checked />AES-256
+									<input type="radio" name="radioFunction" value="option1" id="aes256" checked />Secure (AES)
 								</label>
 							</div>
 							<div class="form-group">
 								<label>
-									Data sign
+									Integrity
 								</label>
 							</div>
 							<div class="radio">
 								<label>
-									<input type="radio" name="radioFunction" value="option1" id="rsa1024" />RSA-1024
+									<input type="radio" name="radioFunction" value="option1" id="rsa1024" />Legacy (RSA 1K)
 								</label>
 							</div>
 							<div class="radio">
 								<label>
-									<input type="radio" name="radioFunction" value="option1" id="rsa2048" />RSA-2048
+									<input type="radio" name="radioFunction" value="option1" id="rsa2048" />Secure (RSA 2K)
 								</label>
 							</div>
 						</div>
 						<div class="col-sm-7">
 							<div class="form-group">
 								<label class="mg-clear">
-									Data to process
+									Step 2: Data to protect
 								</label>
 							</div>
+							<hr/>
 							<p>
 							</p>
 							<div class="form-group">
 								<label>
-									Raw data
+									Readable text
 								</label>
 								<input class="form-control" id="dataraw" data-validation-required-message="dataraw is required." placeholder="EnigmaTestVector" />
 							</div>
 							<div class="form-group">
 								<label>
-									Encoded data (hexadecimal)
+									Binary data in hex encoding
 								</label>
 								<input class="form-control" id="datahex" data-validation-required-message="datahex is required." placeholder="456E69676D6154657374566563746F72" />
 							</div>
@@ -201,9 +215,10 @@
 						<div class="col-sm-3">
 							<div class="form-group">
 								<label class="mg-clear">
-									Server connection
+									Step 3: Test site
 								</label>
 							</div>
+							<hr/>
 							<p>
 							</p>
 							<div class="radio">
@@ -222,35 +237,33 @@
 						<span class="divider"></span>
 					</div>
 					<button class="bloc-button btn btn-lg btn-rich-electric-blue btn-block" type="submit">
-						Encrypt / Sign
+						Protect Your Data Now
 					</button>
-					<div class="form-group">
-						<label class="mg-sm">
-							Request sent to Enigma Bridge
-						</label><textarea class="form-control" rows="2" cols="50" id="request" placeholder="POST RESTful request for selected parameters. The body is “application/json” ..."></textarea>
-					</div>
-					<div class="row">
+					<div class="row voffset">
 						<div class="col-sm-2">
 							<div class="form-group">
 								<label>
 									Response status
-								</label><textarea class="form-control" rows="3" cols="50" id="responsetime" placeholder="Response OK/NOK"></textarea>
+								</label><textarea class="form-control" rows="3" cols="50" id="responsetime" placeholder="Response OK/ERROR"></textarea>
 							</div>
 						</div>
-						<div class="col-sm-5">
+						<div class="col-sm-10">
 							<div class="form-group">
 								<label>
-									Response encoded
-								</label><textarea class="form-control" rows="3" cols="50" id="responsehex" ></textarea>
+									Protected data
+								</label><textarea class="form-control" rows="3" cols="50" id="responseencoded" data-validation-required-message="responseencoded is required." placeholder="Data that can be sent across the internet or stored in a database without the risk of being compromised."></textarea>
 							</div>
 						</div>
-						<div class="col-sm-5">
-							<div class="form-group">
-								<label>
-									Response raw
-								</label><textarea class="form-control" rows="3" cols="50" id="responseraw" ></textarea>
-							</div>
-						</div>
+					</div>
+					<div class="form-group">
+						<label class="mg-sm">
+							Request sent to Enigma Bridge
+						</label><textarea class="form-control" rows="2" cols="50" id="request" data-validation-required-message="request is required." placeholder="POST RESTful request. The body is in “application/json”  format."></textarea>
+					</div>
+					<div class="form-group">
+						<label class="mg-sm">
+							Response received from Enigma Bridge
+						</label><textarea class="form-control" rows="2" cols="50" id="responseraw" data-validation-required-message="responseraw is required." placeholder="POST RESTful response format is “application/json” ."></textarea>
 					</div>
 				</form>
 				<div class="divider-h">
@@ -353,7 +366,8 @@
 					Scalability
 				</h3>
 				<p class="text-center">
-					Enigma Bridge service utilizes a large number of secure processing elements. We allocate these processors to users on-the-fly to adjust to changing user requirements in real time.
+					Enigma Bridge service utilizes a large number of secure processing elements. On-the-fly allocation
+					of these processors gives you always enough processing power for your needs.
 				</p>
 			</div>
 			<div class="col-sm-4">
@@ -364,7 +378,8 @@
 					Simplicity
 				</h3>
 				<p class="text-center">
-					Use of Enigma Bridge is simple. You can use it with only a general ability to develop software. All configuration is done automatically behind the scenes.
+					An API key and address of Enigma Bridge is all you need to protect your data or your business. Just
+					like using a database, Enigma Bridge is so simple. We take care of everything else once you start using us.
 				</p>
 			</div>
 			<div class="col-sm-4">
@@ -375,7 +390,8 @@
 					High Availability
 				</h3>
 				<p class="text-center">
-					Enigma Bridge service comprises at least two separate servers with automatic fail-over and load-balancing. A large number of secure processors makes resiliency an inherent property of Enigma Bridge.
+					Enigma Bridge service comprises at least two separate servers with automatic fail-over and load-balancing.
+					A large number of secure processors makes resiliency an inherent property of Enigma Bridge.
 				</p>
 			</div>
 		</div>
