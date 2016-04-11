@@ -207,7 +207,7 @@ function btnCreateUserClick(){
 		}
 
 		log("Create Auth context configuration: " + JSON.stringify(options));
-		var request = new eb.comm.hotp.newHotpUserRequest(options);
+		var request = new eb.comm.hotp.newHotpUserRequest({hotp:options});
 		request.configure(reqSettings);
 
 		// Callbacks settings.
