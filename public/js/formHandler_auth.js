@@ -19,6 +19,14 @@ var btnCreateUser;
 var divQrCode;
 var fldRegUserCtx;
 var fldRegUserCtxCrc;
+var fldLoginUsername;
+var fldLoginPassword;
+var btnLoginPasswordWrong;
+var btnLoginPasswordOK;
+var fldLoginResult;
+var fldLoginCtx;
+var fldLoginCtxCrc;
+var btnLogin;
 
 // Basic HOTP record.
 var hotpRecord = function(){};
@@ -26,7 +34,8 @@ hotpRecord.prototype = {
 	userId: undefined,
 	secret: undefined,
 	counter: undefined,
-	ctx: undefined
+	ctx: undefined,
+	password: undefined // just for demo.
 };
 
 var userNameMap = {};
@@ -250,6 +259,7 @@ function createUserFinished(response){
 	// Success, happy path.
 	record.userId = sjcl.codec.hex.fromBits(eb.comm.hotp.userIdToBits(response.hotpUserId));
 	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
+	record.password = fldRegPassword.val();
 
 	fldRegUserCtx.val(record.ctx);
 	fldRegUserCtxCrc.val(eb.misc.genChecksumValue(record.ctx, 4));
@@ -270,6 +280,8 @@ function createUserFinished(response){
 		divQrCode.qrcode(qrLink2);
 	}
 
+	fldLoginUsername.val(fldRegUsername.val());
+
 	// Store this record to the local database.
 	userNameMap[fldRegUsername.val()] = record;
 }
@@ -286,6 +298,21 @@ function createUserFailed(failType, data){
 	successBg(fldRegUserCtx, false);
 }
 
+function btnLoginClick(){
+	// Get user record.
+	var uname = fldLoginUsername.val();
+	var record = userNameMap[uname];
+	if (!record){
+		fldLoginResult.val("User was not found");
+		successBg(fldLoginResult, false);
+		return;
+	}
+
+	fldLoginResult.val("...");
+	successBg(fldLoginResult);
+	
+}
+
 $(function()
 {
 	htmlBody = $("body");
@@ -299,6 +326,14 @@ $(function()
 	divQrCode = $('#qrCode');
 	fldRegUserCtx = $('#userctxnew');
 	fldRegUserCtxCrc = $('#userctxnew_crc');
+	fldLoginUsername = $('#login_username');
+	fldLoginPassword = $('#login_password');
+	btnLoginPasswordWrong = $('#btnLoginWrongPassword');
+	btnLoginPasswordOK = $('#btnLoginCorrectPassword');
+	fldLoginResult = $('#logon_result');
+	fldLoginCtx = $('#userctxupdated');
+	fldLoginCtxCrc = $('#userctxupdate_crc');
+	btnLogin = $('#btnLogin');
 
 	$("#btnSystemInit").click(function(){
 		btnGenerateTemplate();
@@ -310,6 +345,10 @@ $(function()
 
 	btnCreateUser.click(function(){
 		btnCreateUserClick();
+	});
+
+	btnLogin.click(function(){
+		btnLoginClick();
 	});
 
 	$("input,textarea").jqBootstrapValidation(
