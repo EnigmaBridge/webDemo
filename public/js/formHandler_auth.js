@@ -27,6 +27,8 @@ var fldLoginResult;
 var fldLoginCtx;
 var fldLoginCtxCrc;
 var btnLogin;
+var radLoginPassword;
+var radLoginHotp;
 
 // Basic HOTP record.
 var hotpRecord = function(){};
@@ -35,7 +37,10 @@ hotpRecord.prototype = {
 	secret: undefined,
 	counter: undefined,
 	ctx: undefined,
-	password: undefined // just for demo.
+
+	// Demo fields
+	password: undefined,
+	lastSuccessHotp: undefined
 };
 
 var userNameMap = {};
@@ -101,6 +106,10 @@ function log(msg){
 //	successBg(statusElem, responseStatus == eb.comm.status.SW_STAT_OK);
 //}
 
+function isChecked(elem){
+	return elem.is(':checked');
+}
+
 /**
  * Switches main loading overlay.
  * @param started if true overlay is displayed. Hidden otherwise.
@@ -120,8 +129,8 @@ function bodyProgress(started){
  * @returns template settings.
  */
 function getTemplateSettings(passwd){
-	var authPasswd = chkPassword.is(':checked');
-	var authHotp = chkHotp.is(':checked');
+	var authPasswd = isChecked(chkPassword);
+	var authHotp = isChecked(chkHotp);
 	if (!authPasswd && !authHotp){
 		throw new eb.exception.invalid("No auth method chosen");
 	}
@@ -148,8 +157,8 @@ function getTemplateSettings(passwd){
  * Called on template button click, generates template.
  */
 function btnGenerateTemplate(){
-	var authPasswd = chkPassword.is(':checked');
-	var authHotp = chkHotp.is(':checked');
+	var authPasswd = isChecked(chkPassword);
+	var authHotp = isChecked(chkHotp);
 
 	successBg(templateField);
 	if (!authPasswd && !authHotp){
@@ -231,6 +240,10 @@ function btnCreateUserClick(){
 	}
 }
 
+function updateCrc(dstElem, srcData){
+	dstElem.val(srcData !== undefined && srcData.length > 0 ? eb.misc.genChecksumValue(srcData, 4) : '');
+}
+
 function createUserFinished(response){
 	var record = new hotpRecord();
 
@@ -262,9 +275,10 @@ function createUserFinished(response){
 	record.password = fldRegPassword.val();
 
 	fldRegUserCtx.val(record.ctx);
-	fldRegUserCtxCrc.val(eb.misc.genChecksumValue(record.ctx, 4));
+	updateCrc(fldRegUserCtxCrc, record.ctx);
 
 	if (response.hotpKey){
+		record.counter = 0;
 		record.secret = sjcl.codec.hex.fromBits(response.hotpKey);
 		var qrLink2 = eb.comm.hotp.hotpGetQrLink(response.hotpKey, {
 			label: sjcl.codec.hex.fromBits(response.hotpUserId),
@@ -298,19 +312,55 @@ function createUserFailed(failType, data){
 	successBg(fldRegUserCtx, false);
 }
 
+function getUserRecord(uname){
+	return userNameMap[uname];
+}
+
+function btnPasswordGenClick(correctOne){
+	var uname = fldLoginUsername.val();
+	var record = getUserRecord(uname);
+	if (record === undefined){
+		fldLoginResult.val("User was not found");
+		successBg(fldLoginResult, false);
+		return;
+	}
+
+	if (!correctOne){
+		fldLoginPassword.val('InvalidPassword' + Math.floor(Math.random()*100));
+		return;
+	}
+
+	var doHotp = isChecked(radLoginHotp);
+	if (doHotp){
+		var hotpSecretBits = sjcl.codec.hex.toBits(record.secret);
+		var hotpCtr = record.counter;
+
+		// Compute HOTP code.
+		var hotpCode = eb.comm.hotp.hotpCompute(hotpSecretBits, hotpCtr, templateHotpDigits);
+		var hotpCodeStr = sprintf("%0"+templateHotpDigits+"d", hotpCode);
+		fldLoginPassword.val(hotpCodeStr);
+
+	} else {
+		fldLoginPassword.val(record.password);
+	}
+}
+
 function btnLoginClick(){
 	// Get user record.
 	var uname = fldLoginUsername.val();
-	var record = userNameMap[uname];
+	var record = getUserRecord(uname);
 	if (!record){
 		fldLoginResult.val("User was not found");
 		successBg(fldLoginResult, false);
 		return;
 	}
 
+	// Build request.
 	fldLoginResult.val("...");
 	successBg(fldLoginResult);
-	
+
+
+
 }
 
 $(function()
@@ -334,6 +384,8 @@ $(function()
 	fldLoginCtx = $('#userctxupdated');
 	fldLoginCtxCrc = $('#userctxupdate_crc');
 	btnLogin = $('#btnLogin');
+	radLoginPassword = $('#rb-password');
+	radLoginHotp = $('#rb-otp');
 
 	$("#btnSystemInit").click(function(){
 		btnGenerateTemplate();
@@ -345,6 +397,14 @@ $(function()
 
 	btnCreateUser.click(function(){
 		btnCreateUserClick();
+	});
+
+	btnLoginPasswordOK.click(function(){
+		btnPasswordGenClick(true);
+	});
+
+	btnLoginPasswordWrong.click(function(){
+		btnPasswordGenClick(false);
 	});
 
 	btnLogin.click(function(){
