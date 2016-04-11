@@ -394,13 +394,10 @@ function authFinished(record, response){
 		updateCrc(fldLoginCtxCrc, newCtx);
 	}
 
-	if (wasHotp){
-		record.counter += 1;
-		log("HOTP counter incremented to " + record.counter);
-	}
-
 	if (response.hotpStatus == eb.comm.status.SW_STAT_OK && wasHotp){
 		record.lastSuccessHotp = fldLoginPassword.val();
+		record.counter += 1;
+		log("HOTP counter incremented to " + record.counter);
 	}
 }
 
