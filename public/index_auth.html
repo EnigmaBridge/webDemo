@@ -10,10 +10,12 @@
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" href="./css/animate.css" />
+	<link rel="stylesheet" type="text/css" href="enigma.css">
 	<script src="./js/jquery-2.1.0.js"></script>
 	<script src="./js/bootstrap.js"></script>
 	<script src="./js/blocs.js"></script><link rel='stylesheet' href='./css/font-awesome.min.css'/>
     <script src='./js/jqBootstrapValidation.js'></script>
+	<script src='./enigma.combined.js'></script>
 	<script src='./js/formHandler_auth.js'></script>
     <title>Enigma Bridge - Scalable Hardware Encryption for Cloud</title>
 </head>
@@ -153,7 +155,7 @@
 						</p>
 					</div>
 				</div>
-				<button class="bloc-button btn  btn-lg btn-rich-electric-blue btn-block btn-clean" type="submit">
+				<button class="bloc-button btn  btn-lg btn-rich-electric-blue btn-block btn-clean" type="submit" id="btnSystemInit">
 					Initialize Your System and Security
 				</button>
 				<div class="row voffset">
@@ -165,7 +167,7 @@
 										<label>
 											Template for adding users
 										</label>
-										<input class="form-control" id="systemtemplate" data-validation-required-message="systemtemplate is required." placeholder="Valid/invalid and the length of the context" />
+										<input class="form-control" id="systemtemplate" data-validation-required-message="systemtemplate is required." placeholder="Valid/invalid and the length of the context" readonly="readonly"/>
 									</div>
 								</form>
 							</div>
