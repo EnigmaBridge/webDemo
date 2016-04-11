@@ -125,9 +125,6 @@ function finished(data){
 
 $(function()
 {
-	var successMsg = "Your message has been sent."; // Message shown on success.
-	var failMsg = "Sorry it seems that our server is not responding, Sorry for the inconvenience!"; // Message shown on fail.
-
 	// Basic form logic, hiding options when crypto is selected.
 	$("#aes256").click(function(){
 		cryptoSelected('aes256');
