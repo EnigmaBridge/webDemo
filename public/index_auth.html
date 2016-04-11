@@ -535,9 +535,9 @@
 					<div class="col-sm-3">
 						<p>
 							<strong>Let us generate for you</strong>
-						</p><a href="index.html" class="btn btn-clean btn-outer-space pull-left">New Password</a>
+						</p><a id="btnChangeGenNewPassword" class="btn btn-clean btn-outer-space pull-left">New Password</a>
 					</div>
-				</div><a href="index.html" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Change Your Password Now</a>
+				</div><a id="btnChangePassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Change Your Password Now</a>
 				<div class="row voffset">
 					<div class="col-sm-4">
 						<form id="form_18" novalidate>
@@ -634,7 +634,7 @@
 							</div>
 							<div class="radio">
 								<label>
-									<input type="radio" name="rsg-reset" value="rs-reset-pwd" id="rs_reset_pwd" />Passwords
+									<input type="radio" name="rsg-reset" value="rs-reset-pwd" id="rs_reset_pwd" checked="checked"/>Passwords
 								</label>
 							</div>
 							<div class="radio">
@@ -671,9 +671,9 @@
 									Let us generate for you
 								</label>
 							</div>
-						</form><a href="index.html" class="btn btn-clean btn-outer-space">Random New Password</a>
+						</form><a id="btnGenNewPassword" class="btn btn-clean btn-outer-space">Random New Password</a>
 					</div>
-				</div><a href="index.html" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Password Reset Now</a>
+				</div><a id="btnResetPassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Password Reset Now</a>
 				<div class="row">
 					<div class="col-sm-3">
 						<form id="form_1856" novalidate>
@@ -712,7 +712,8 @@
 									QR code for new HOTP
 								</label>
 							</div>
-						</form><img src="img/placeholder-image.png" width="256" height="256" />
+						</form>
+						<div id="resetQr"><img src="img/placeholder-image.png" width="256" height="256" /></div>
 					</div>
 				</div>
 				<div class="divider-h">

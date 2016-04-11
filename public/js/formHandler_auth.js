@@ -10,9 +10,11 @@ var utf = sjcl.codec.utf8String;
  */
 var htmlBody;
 var logElem;
+
 var templateField;
 var chkPassword;
 var chkHotp;
+
 var fldRegPassword;
 var fldRegUsername;
 var btnRegRandomUsername;
@@ -20,6 +22,7 @@ var btnCreateUser;
 var divQrCode;
 var fldRegUserCtx;
 var fldRegUserCtxCrc;
+
 var fldLoginUsername;
 var fldLoginPassword;
 var btnLoginPasswordWrong;
@@ -30,6 +33,26 @@ var fldLoginCtxCrc;
 var btnLogin;
 var radLoginPassword;
 var radLoginHotp;
+
+var fldChangeUsername;
+var fldChangeCurrentPassword;
+var fldChangeNewPassword;
+var btnChangeGenNewPassword;
+var btnChangePassword;
+var fldChangeStatus;
+var fldChangeCtx;
+var fldChangeCtxCrc;
+
+var radResetPassword;
+var radResetHotp;
+var fldResetUsername;
+var fldResetPassword;
+var btnResetRandomPassword;
+var btnResetPassword;
+var fldResetStatus;
+var fldResetCtx;
+var fldResetCtxCrc;
+var fldResetQr;
 
 // Basic HOTP record.
 var hotpRecord = function(){};
@@ -488,6 +511,26 @@ $(function()
 	btnLogin = $('#btnLogin');
 	radLoginPassword = $('#rb-password');
 	radLoginHotp = $('#rb-otp');
+
+	fldChangeUsername = $('#username_change');
+	fldChangeCurrentPassword = $('#currentpassword_change');
+	fldChangeNewPassword = $('#newpassword_change');
+	btnChangeGenNewPassword = $('#btnChangeGenNewPassword');
+	btnChangePassword = $('#btnChangePassword');
+	fldChangeStatus = $('#change_result');
+	fldChangeCtx = $('#changectx');
+	fldChangeCtxCrc = $('#changectx_crc');
+
+	radResetPassword = $('#rs_reset_pwd');
+	radResetHotp = $('#rs_reset_hotp');
+	fldResetUsername = $('#reset_username');
+	fldResetPassword = $('#input_1955');
+	btnResetRandomPassword = $('#btnGenNewPassword');
+	btnResetPassword = $('#btnResetPassword');
+	fldResetStatus = $('#input_2646');
+	fldResetCtx = $('#input_2679');
+	fldResetCtxCrc = $('#input_1160');
+	fldResetQr = $('#resetQr');
 
 	$("#btnSystemInit").click(function(){
 		btnGenerateTemplate();
