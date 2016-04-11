@@ -1,7 +1,132 @@
+"use strict";
+/**
+ * Convenience shortcuts.
+ */
+var h = sjcl.codec.hex;
+var utf = sjcl.codec.utf8String;
+
+/*
+ * Global shortcuts to fields.
+ */
+var templateField;
+var chkPassword = $('#ch-method-pwd');
+var chkHotp = $('#ch-method-hotp');
+
+/**
+ * Functions & handlers
+ */
+function successBg(x, success){
+	if (success === undefined){
+		x.removeClass('successBg');
+		x.removeClass('failedBg');
+	} else if (success){
+		x.addClass('successBg');
+		x.removeClass('failedBg');
+	} else {
+		x.removeClass('successBg');
+		x.addClass('failedBg');
+	}
+}
+
+function log(msg){
+	console.log(msg);
+}
+
+//function connectionError(data){
+//	var statusElem = $('#responsetime');
+//	statusElem.val("Connection error\n" + data.requestObj.requestTime + ' ms');
+//	successBg(statusElem, false);
+//}
+//
+//function finished(data){
+//	var statusElem = $('#responsetime');
+//	var responseStatus = data.response.statusCode;
+//
+//	/*var status = sprintf("0x%04X", responseStatus); */
+//	var status = 'Response';
+//	if (responseStatus == eb.comm.status.SW_STAT_OK){
+//		status += ' - OK';
+//	} else {
+//		status += ' - Failed';
+//	}
+//
+//	status += "\nin " + data.requestObj.requestTime + ' ms';
+//
+//	statusElem.val(status);
+//	successBg(statusElem, responseStatus == eb.comm.status.SW_STAT_OK);
+//}
+
+/**
+ * Returns basic template settings for Authentication initialization.
+ * Uses form settings (auth/hotp)
+ *
+ * @returns template settings.
+ */
+function getTemplateSettings(passwd){
+	var authPasswd = chkPassword.is(':checked');
+	var authHotp = chkHotp.is(':checked');
+	if (!authPasswd && !authHotp){
+		throw new eb.exception.invalid("No auth method chosen");
+	}
+
+	var options = {methods: 0};
+	if (authPasswd){
+		options.methods |= eb.comm.hotp.USERAUTH_FLAG_PASSWD;
+		options.passwd = {};
+
+		var passwdHash = passwd !== undefined && passwd.length > 0 ? sjcl.hash.sha256.hash(passwd) : sjcl.hash.sha256.hash("");
+		options.passwd.hash = sjcl.codec.hex.fromBits(passwdHash);
+	}
+
+	if (authHotp){
+		options.methods |= eb.comm.hotp.USERAUTH_FLAG_HOTP;
+		options.hotp = {};
+		options.hotp.digits = 6;
+	}
+
+	return options;
+}
+
+/**
+ * Called on template button click, generates template.
+ */
+function btnGenerateTemplate(){
+	var authPasswd = chkPassword.is(':checked');
+	var authHotp = chkHotp.is(':checked');
+
+	successBg(templateField);
+	if (!authPasswd && !authHotp){
+		log("Cannot generate system parameters with no auth");
+		templateField.val("Failed - Has to choose either password or HOTP authentication or both");
+		successBg(templateField, false);
+		return;
+	}
+
+	var options = getTemplateSettings();
+	log(sprintf("Using passwords=%s, HOTP=%s for authentication system. Settings: %s", authPasswd, authHotp, JSON.stringify(options)));
+
+	var template = eb.comm.hotp.getCtxTemplate(options);
+	var contextPlaceholder = eb.comm.hotp.prepareUserContext(template);
+	var response = sprintf("Success. Context length: %s B, CRC: %s, template: %s",
+		sjcl.bitArray.bitLength(contextPlaceholder)/8,
+		eb.misc.genChecksumValue(template, 4),
+		sjcl.codec.hex.fromBits(template)
+		);
+
+	templateField.val(response);
+	successBg(templateField, true);
+	log("Template generated: %s", response);
+}
+
 $(function()
 {
-	var successMsg = "Your message has been sent."; // Message shown on success.
-	var failMsg = "Sorry it seems that our mail server is not responding, Sorry for the inconvenience!"; // Message shown on fail.
+	templateField = $('#systemtemplate');
+	chkPassword = $('#ch-method-pwd');
+	chkHotp = $('#ch-method-hotp');
+
+	$("#btnSystemInit").click(function(){
+		btnGenerateTemplate();
+	});
 	
 	$("input,textarea").jqBootstrapValidation(
     {
@@ -10,42 +135,7 @@ $(function()
 	 	{
 			event.preventDefault(); // prevent default submit behaviour
 			
-			var processorFile = "./includes/"+$form.attr('id')+".php";
-			var formData = {};
-
-			$form.find("input, textarea").each(function(e) // Loop over form objects build data object
-			{		
-				var fieldData =  $(this).val();
-				
-				if($(this).is(':checkbox')) // Handle Checkboxes
-				{
-					fieldData = $(this).is(":checked");
-				}
-				else if($(this).is(':radio')) // Handle Radios
-				{
-					fieldData = $(this).val()+' = '+$(this).is(":checked");
-				}
-				formData[$(this).attr('id')] = fieldData;	
-			});
-	
-			$.ajax({
-		        url: processorFile,
-		    	type: "POST",
-		    	data: formData,
-		    	cache: false,
-		    	success: function() // Success
-		 		{  
-					$form.append("<div id='form-alert'><div class='alert alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+successMsg+"</strong></div></div>");		
-		 	   	},
-			   	error: function() // Fail
-			   	{
-					$form.append("<div id='form-alert'><div class='alert alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+failMsg+"</strong></div></div>");	
-			   	},
-				complete: function() // Clear
-				{
-					$form.trigger("reset");
-				},
-		   	});
+			// TODO: custom handling.
          },
          filter: function() // Handle hidden form elements
 		 {
