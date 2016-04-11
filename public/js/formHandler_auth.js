@@ -9,6 +9,7 @@ var utf = sjcl.codec.utf8String;
  * Global shortcuts to fields.
  */
 var htmlBody;
+var logElem;
 var templateField;
 var chkPassword;
 var chkHotp;
@@ -80,31 +81,22 @@ function successBg(x, success){
 
 function log(msg){
 	console.log(msg);
+	append_message(msg);
 }
 
-//function connectionError(data){
-//	var statusElem = $('#responsetime');
-//	statusElem.val("Connection error\n" + data.requestObj.requestTime + ' ms');
-//	successBg(statusElem, false);
-//}
-//
-//function finished(data){
-//	var statusElem = $('#responsetime');
-//	var responseStatus = data.response.statusCode;
-//
-//	/*var status = sprintf("0x%04X", responseStatus); */
-//	var status = 'Response';
-//	if (responseStatus == eb.comm.status.SW_STAT_OK){
-//		status += ' - OK';
-//	} else {
-//		status += ' - Failed';
-//	}
-//
-//	status += "\nin " + data.requestObj.requestTime + ' ms';
-//
-//	statusElem.val(status);
-//	successBg(statusElem, responseStatus == eb.comm.status.SW_STAT_OK);
-//}
+function formatDate(date) {
+	var hours = date.getHours();
+	var minutes = date.getMinutes();
+	var sec = date.getSeconds();
+	var milli = date.getMilliseconds();
+	var strTime = sprintf("%02d:%02d:%02d.%03d", hours, minutes, sec, milli);
+	return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear() + " " + strTime;
+}
+
+function append_message(msg) {
+	var newMsg = formatDate(new Date()) + " - " + msg;
+	logElem.val((logElem.val() + "\n" + newMsg).trim());
+}
 
 function isChecked(elem){
 	return elem.is(':checked');
@@ -209,6 +201,7 @@ function btnCreateUserClick(){
 		log("Create Auth context configuration: " + JSON.stringify(options));
 		var request = new eb.comm.hotp.newHotpUserRequest({hotp:options});
 		request.configure(reqSettings);
+		request.logger = append_message;
 
 		// Callbacks settings.
 		request.done(function (response, requestObj, data) {
@@ -437,6 +430,7 @@ function btnLoginClick(){
 
 	var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
 	request.configure(reqSettings);
+	request.logger = append_message;
 
 	// Callbacks settings.
 	request.done(function(response, requestObj, data) {
@@ -473,6 +467,7 @@ function btnLoginClick(){
 $(function()
 {
 	htmlBody = $("body");
+	logElem = $("#log");
 	templateField = $('#systemtemplate');
 	chkPassword = $('#ch-method-pwd');
 	chkHotp = $('#ch-method-hotp');
