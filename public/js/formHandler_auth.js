@@ -64,7 +64,10 @@ hotpRecord.prototype = {
 
 	// Demo fields
 	password: undefined,
-	lastSuccessHotp: undefined
+	lastSuccessHotp: undefined,
+	isPasswd: undefined,
+	isHotp: undefined
+
 };
 
 var userNameMap = {};
@@ -289,6 +292,8 @@ function createUserFinished(response){
 	record.userId = sjcl.codec.hex.fromBits(eb.comm.hotp.userIdToBits(response.hotpUserId));
 	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
 	record.password = fldRegPassword.val();
+	record.isHotp = isChecked(chkHotp);
+	record.isPasswd = isChecked(chkPassword);
 
 	fldRegUserCtx.val(record.ctx);
 	updateCrc(fldRegUserCtxCrc, record.ctx);
@@ -310,10 +315,19 @@ function createUserFinished(response){
 		divQrCode.qrcode(qrLink2);
 	}
 
-	fldLoginUsername.val(fldRegUsername.val());
+	// Update other fields.
+	var uname = fldRegUsername.val();
+	fldLoginUsername.val(uname);
+	fldChangeUsername.val(uname);
+	fldResetUsername.val(uname);
+	if (record.isPasswd){
+		fldChangeCurrentPassword.val(record.password);
+	} else {
+		// TODO: disable password change.
+	}
 
 	// Store this record to the local database.
-	userNameMap[fldRegUsername.val()] = record;
+	userNameMap[uname] = record;
 }
 
 function createUserFailed(failType, data){
@@ -487,6 +501,18 @@ function btnLoginClick(){
 	request.doRequest();
 }
 
+function getRandomPassword(){
+	return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
+}
+
+function btnChangeGenNewPasswordClick(){
+	fldChangeNewPassword.val(getRandomPassword());
+}
+
+function btnResetRandomPasswordClick(){
+	fldResetPassword.val(getRandomPassword());
+}
+
 $(function()
 {
 	htmlBody = $("body");
@@ -554,6 +580,14 @@ $(function()
 
 	btnLogin.click(function(){
 		btnLoginClick();
+	});
+
+	btnChangeGenNewPassword.click(function(){
+		btnChangeGenNewPasswordClick();
+	});
+
+	btnResetRandomPassword.click(function(){
+		btnResetRandomPasswordClick();
 	});
 
 	$("input,textarea").jqBootstrapValidation(
