@@ -9,8 +9,9 @@ var utf = sjcl.codec.utf8String;
  * Global shortcuts to fields.
  */
 var templateField;
-var chkPassword = $('#ch-method-pwd');
-var chkHotp = $('#ch-method-hotp');
+var chkPassword;
+var chkHotp;
+var fldRegPassword;
 
 /**
  * Functions & handlers
@@ -115,6 +116,8 @@ function btnGenerateTemplate(){
 
 	templateField.val(response);
 	successBg(templateField, true);
+	fldRegPassword.prop('disabled', !authPasswd);
+
 	log("Template generated: %s", response);
 }
 
@@ -123,6 +126,7 @@ $(function()
 	templateField = $('#systemtemplate');
 	chkPassword = $('#ch-method-pwd');
 	chkHotp = $('#ch-method-hotp');
+	fldRegPassword = $('#add_password');
 
 	$("#btnSystemInit").click(function(){
 		btnGenerateTemplate();
