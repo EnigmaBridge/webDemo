@@ -339,6 +339,7 @@ function btnPasswordGenClick(correctOne){
 		var hotpCode = eb.comm.hotp.hotpCompute(hotpSecretBits, hotpCtr, templateHotpDigits);
 		var hotpCodeStr = sprintf("%0"+templateHotpDigits+"d", hotpCode);
 		fldLoginPassword.val(hotpCodeStr);
+		log(sprintf("HOTP code %s generated from ctr %d", hotpCodeStr, hotpCtr));
 
 	} else {
 		fldLoginPassword.val(record.password);
@@ -395,6 +396,7 @@ function authFinished(record, response){
 
 	if (wasHotp){
 		record.counter += 1;
+		log("HOTP counter incremented to " + record.counter);
 	}
 
 	if (response.hotpStatus == eb.comm.status.SW_STAT_OK && wasHotp){
