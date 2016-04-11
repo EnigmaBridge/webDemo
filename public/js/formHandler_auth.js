@@ -220,7 +220,7 @@ function btnCreateUserClick(){
 			createUserFailed(failType, data);
 
 		}).always(function (request, data) {
-			log("Request finished");
+			log("Create User Request finished");
 			bodyProgress(false);
 		});
 
@@ -278,7 +278,7 @@ function createUserFinished(response){
 	updateCrc(fldRegUserCtxCrc, record.ctx);
 
 	if (response.hotpKey){
-		record.counter = 0;
+		record.counter = 1;
 		record.secret = sjcl.codec.hex.fromBits(response.hotpKey);
 		var qrLink2 = eb.comm.hotp.hotpGetQrLink(response.hotpKey, {
 			label: sjcl.codec.hex.fromBits(response.hotpUserId),
@@ -345,6 +345,63 @@ function btnPasswordGenClick(correctOne){
 	}
 }
 
+function authFailed(data){
+	fldLoginResult.val("Connection error");
+	successBg(fldLoginResult, false);
+}
+
+function authFinished(record, response){
+	var responseStatus = response.hotpStatus;
+	if ((responseStatus === undefined || responseStatus == 0x0) && response.statusCode != eb.comm.status.SW_STAT_OK){
+		responseStatus = response.statusCode;
+	}
+
+	var status = '';
+	if (responseStatus == eb.comm.status.SW_STAT_OK){
+		status += 'Authenticated successfully';
+	} else if (responseStatus == eb.comm.status.SW_AUTH_TOO_MANY_FAILED_TRIES){
+		status += 'Failed, too many attempts';
+	} else if (responseStatus == eb.comm.status.SW_HOTP_TOO_MANY_FAILED_TRIES){
+		status += 'Failed, too many HOTP attempts';
+	} else if (responseStatus == eb.comm.status.SW_HOTP_WRONG_CODE && record.lastSuccessHotp == fldLoginPassword.val()) {
+		status += 'Failed, HOTP can be used only once';
+	} else if (responseStatus == eb.comm.status.SW_HOTP_WRONG_CODE) {
+		status += 'Failed, invalid HOTP code';
+	} else if (responseStatus == eb.comm.status.SW_WRONG_PASSWD){
+		status += 'Failed, invalid password';
+	} else if (responseStatus == eb.comm.status.SW_PASSWD_INVALID_LENGTH){
+		status += 'Failed, invalid password length';
+	} else if (responseStatus == eb.comm.status.SW_PASSWD_TOO_MANY_FAILED_TRIES){
+		status += 'Failed, too many password attempts';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_NOT_ALLOWED){
+		status += 'Failed, authentication method not allowed';
+	} else if (responseStatus == eb.comm.status.SW_INVALID_TLV_FORMAT){
+		status += 'Failed, invalid auth request (empty password or HOTP?)';
+	} else {
+		status += 'Failed, error' + sprintf("0x%04X", responseStatus);
+	}
+
+	fldLoginResult.val(status);
+	successBg(fldLoginResult, response.hotpStatus == eb.comm.status.SW_STAT_OK);
+
+	var wasHotp = isChecked(radLoginHotp);
+	if (response.hotpUserCtx){
+		var newCtx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
+		record.ctx = newCtx;
+
+		fldLoginCtx.val(newCtx);
+		updateCrc(fldLoginCtxCrc, newCtx);
+	}
+
+	if (wasHotp){
+		record.counter += 1;
+	}
+
+	if (response.hotpStatus == eb.comm.status.SW_STAT_OK && wasHotp){
+		record.lastSuccessHotp = fldLoginPassword.val();
+	}
+}
+
 function btnLoginClick(){
 	// Get user record.
 	var uname = fldLoginUsername.val();
@@ -359,8 +416,59 @@ function btnLoginClick(){
 	fldLoginResult.val("...");
 	successBg(fldLoginResult);
 
+	// Auth Request
+	var doHotp = isChecked(radLoginHotp);
+	var reqSettings = $.extend(requestConfig, {
+		apiKeyLow4Bytes: 	doHotp ? 0x5588 : 0x5599,
+		userObjectId: 		doHotp ? 0x5588 : 0x5599,
+		callRequestType: 	doHotp ? 'AUTH_HOTP' : 'AUTH_PASSWD'
+	});
 
+	var authCode = fldLoginPassword.val();
+	var reqConfig = {hotp:{
+		'userId': record.userId,
+		'userCtx': record.ctx
+	}};
 
+	if (doHotp){
+		reqConfig.hotp.hotpCode = authCode;
+	} else {
+		reqConfig.hotp.passwd = sjcl.hash.sha256.hash(authCode);
+	}
+
+	var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
+	request.configure(reqSettings);
+
+	// Callbacks settings.
+	request.done(function(response, requestObj, data) {
+		log("DONE! " + response.toString());
+		authFinished(record, response);
+
+	}).fail(function(failType, data){
+		log("fail! type=" + failType);
+		if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
+			log("Fail msg: " + data.response.toString());
+			authFinished(record, data.response);
+
+		} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
+			log("Connection error");
+			authFailed(data);
+		}
+
+	}).always(function(request, data){
+		log("Auth Request finished");
+		bodyProgress(false);
+	});
+
+	// Build the request so we can display request in the form.
+	request.build();
+
+	// Do the call.
+	fldLoginResult.val('...');
+	successBg(fldLoginResult);
+	bodyProgress(true);
+
+	request.doRequest();
 }
 
 $(function()
