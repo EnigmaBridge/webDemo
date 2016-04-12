@@ -73,6 +73,7 @@ authRecord.prototype = {
 
 // Global map storing username -> Auth record
 var userNameMap = {};
+var templateGenerated = false;
 
 /**
  * Global section with variables.
@@ -189,6 +190,15 @@ function isChecked(elem){
 }
 
 /**
+ * Sets given element as disabled.
+ * @param elem
+ * @param disabled
+ */
+function setDisabled(elem, disabled){
+	elem.prop('disabled', disabled);
+}
+
+/**
  * Switches main loading overlay.
  * @param started if true overlay is displayed. Hidden otherwise.
  */
@@ -261,7 +271,8 @@ function btnGenerateTemplate(){
 		);
 
 	statusFieldSet(templateField, response, true);
-	fldRegPassword.prop('disabled', !authPasswd);
+	setDisabled(fldRegPassword, !authPasswd);
+	templateGenerated = true;
 
 	log("Template generated: " + response);
 }
@@ -273,6 +284,10 @@ function btnGenNameClick(){
 
 function btnCreateUserClick(){
 	try {
+		if (!templateGenerated){
+			throw new eb.exception.invalid("You must generate template first");
+		}
+
 		var authPasswd = isChecked(chkPassword);
 		var options = getTemplateSettings(fldRegPassword.val());
 		var reqSettings = $.extend(requestConfig, {
