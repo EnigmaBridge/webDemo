@@ -24,11 +24,13 @@
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
-.successBg {
-    background: #ddffdd;
+.successBg,
+.form-group .successBg{
+    background-color: #ddffdd;
 }
-.failedBg {
-    background: #ffdddd;
+.failedBg,
+.form-group .failedBg{
+    background-color: #ffdddd;
 }
 
 /* Start by setting display:none to make this hidden.

@@ -694,6 +694,38 @@ eb.misc = {
     padHexToSize: function(x, size){
         x = x.trim().replace(/[\s]+/g, '').replace(/^0x/, '');
         return (x.length<size) ? (('0'.repeat(size-x.length))+x) : x
+    },
+
+    /**
+     * Generates checksum value from the input.
+     * @param x hexcoded string or bitArray. If you want to checksum arbitrary string, hash it first.
+     * @param size
+     */
+    genChecksumValue: function(x, size){
+        var inputBits = eb.misc.inputToBits(x);
+
+        // As we are reducing information from x to base32*size bits, we are performing
+        // two hash rounds to make sure the dependency is non-trivial.
+        var toHash = sjcl.codec.hex.fromBits(inputBits) + ',' + size + ',' + sjcl.bitArray.bitLength(inputBits);
+        var inputHashBits = sjcl.hash.sha256.hash(toHash);
+        var inputHashBits2 = sjcl.hash.sha256.hash(sjcl.codec.hex.fromBits(inputHashBits) + toHash);
+        var hashOut = [], i;
+        for(i=0; i<256/32; i++){
+            hashOut[i] = inputHashBits[i] ^ inputHashBits2[i];
+        }
+
+        // Base 32, size first characters
+        var base32string = sjcl.codec.base32.fromBits(hashOut);
+        return base32string.substring(0, size);
+    },
+
+    /**
+     * Generates checksum value from the input.
+     * @param x an arbitraty string
+     * @param size
+     */
+    genChecksumValueFromString: function(x, size){
+        return eb.misc.genChecksumValue(sjcl.hash.sha256.hash(x), size);
     }
 };
 
@@ -1051,11 +1083,11 @@ eb.padding.pkcs15 = {
                 }while(curByte == 0);
             }
 
-           tmp = tmp << 8 | curByte;
-           if ((i&3) === 3) {
-                 ps.push(tmp);
-                 tmp = 0;
-           }
+            tmp = tmp << 8 | curByte;
+            if ((i&3) === 3) {
+                ps.push(tmp);
+                tmp = 0;
+            }
         }
         if (i&3) {
             ps.push(sjcl.bitArray.partial(8*(i&3), tmp));
@@ -1270,7 +1302,7 @@ eb.comm = {
      */
     status: {
         ERROR_CLASS_SECURITY:           0x2000,
-        
+
         ERROR_CLASS_WRONGDATA:          0x8000,
         SW_INVALID_TLV_FORMAT:          0x8000 | 0x04c,
         SW_WRONG_PADDING:               0x8000 | 0x03d,
@@ -1290,6 +1322,7 @@ eb.comm = {
         SW_WRONG_PASSWD:                0xa000 | 0x065,
 
         SW_STAT_OK:                     0x9000,
+        ERROR_CLASS_ERR_CHECK_ERRORS_6f:0x6f00,
 
         PDATA_FAIL_CONNECTION:          0x1,
         PDATA_FAIL_RESPONSE_PARSING:    0x3,
@@ -3645,7 +3678,7 @@ eb.comm.hotp.generalHotpParser.inheritsFrom(eb.comm.base, {
         // Check for the plainData length = 0 was here, but protected data does not contain plain data,
         // it was moved to a different field in the response message so we don't check it here,
         // while original code in processUserAuthResponse does.
-        
+
         // Check main tag value.
         var tag = ba.extract(data, offset, 8);
         offset += 8;
