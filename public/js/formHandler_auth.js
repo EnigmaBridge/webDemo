@@ -82,7 +82,7 @@ var templateGenerated = false;
 var names = ['test', 'john', 'alice', 'bob', 'eve', 'mallory', 'rick', 'bruce', 'mathew', 'alan', 'linus', 'petr', 'dan'];
 var templateHotpDigits = 6;
 var requestConfig = {
-	remoteEndpoint: 'site1.enigmabridge.com',
+	remoteEndpoint: 'site2.enigmabridge.com',
 	remotePort: 11180,
 	requestMethod: "POST",
 	requestScheme: 'https',
