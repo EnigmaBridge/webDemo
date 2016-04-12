@@ -718,7 +718,7 @@ function resetResetFields(){
 
 function resetFailed(data){
 	resetResetFields();
-	statusFieldSet(fldChangeStatus, "Connection error", false);
+	statusFieldSet(fldResetStatus, "Connection error", false);
 }
 
 function resetFinished(record, response){
@@ -745,7 +745,9 @@ function resetFinished(record, response){
 
 	// Success, happy path.
 	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
-	record.password = fldChangeNewPassword.val();
+	if (isChecked(radResetPassword)) {
+		record.password = fldResetPassword.val();
+	}
 
 	if (response.hotpKey){
 		record.counter = 1;
