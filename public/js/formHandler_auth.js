@@ -540,6 +540,110 @@ function btnChangeGenNewPasswordClick(){
 	fldChangeNewPassword.val(getRandomPassword());
 }
 
+function changeFailed(data){
+	statusFieldSet(fldChangeStatus, "Connection error", false);
+}
+
+function changeFinished(record, response){
+	// Response status code handling.
+	var responseStatus = response.hotpStatus;
+	if ((responseStatus === undefined || responseStatus == 0x0) && response.statusCode != eb.comm.status.SW_STAT_OK){
+		responseStatus = response.statusCode;
+	}
+
+	var status = '';
+	if (responseStatus == eb.comm.status.SW_STAT_OK){
+		status += 'Success.';
+	} else {
+		status += 'Failed.';
+	}
+
+	statusFieldSet(fldChangeStatus, status, response.hotpStatus == eb.comm.status.SW_STAT_OK);
+
+	// Fail.
+	if (responseStatus != eb.comm.status.SW_STAT_OK){
+		fldChangeCtx.val('');
+		fldChangeCtxCrc.val('');
+		return;
+	}
+
+	// Success, happy path.
+	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
+	record.password = fldChangeNewPassword.val();
+
+	// Update context values
+	fldChangeCtx.val(record.ctx);
+	updateCrc(fldChangeCtxCrc, record.ctx);
+	fldLoginCtx.val(record.ctx);
+	updateCrc(fldLoginCtxCrc, record.ctx);
+}
+
+function btnChangePasswordClick(){
+	// Get user record.
+	var uname = fldChangeUsername.val();
+	var record = getUserRecord(uname);
+	if (!record){
+		statusFieldSet(fldChangeStatus, "User was not found", false);
+		return;
+	}
+
+	// Build request.
+	statusFieldSet(fldChangeStatus, '...');
+
+	// Check current password
+	if (fldChangeCurrentPassword.val() != record.password){
+		statusFieldSet(fldChangeStatus, "Current password is invalid", false);
+		return;
+	}
+
+	// Change password Request
+	var reqSettings = $.extend(requestConfig, {
+		apiKeyLow4Bytes: 	svcSettings.updateUser.uiod,
+		userObjectId: 		svcSettings.updateUser.uiod,
+		callRequestType: 	svcSettings.updateUser.requestType
+	});
+	var reqConfig = {hotp:{
+		userId: record.userId,
+		userCtx: record.ctx,
+		method: eb.comm.hotp.USERAUTH_FLAG_PASSWD,
+		passwd: sjcl.hash.sha256.hash(fldChangeNewPassword.val())
+	}};
+
+	var request = new eb.comm.hotp.authContextUpdateRequest(reqConfig);
+	request.configure(reqSettings);
+	request.logger = append_message;
+
+	// Callbacks settings.
+	request.done(function(response, requestObj, data) {
+		log("DONE! " + response.toString());
+		changeFinished(record, response);
+
+	}).fail(function(failType, data){
+		log("fail! type=" + failType);
+		if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
+			log("Fail msg: " + data.response.toString());
+			changeFinished(record, data.response);
+
+		} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
+			log("Connection error");
+			changeFailed(data);
+		}
+
+	}).always(function(request, data){
+		log("Change Request finished");
+		bodyProgress(false);
+	});
+
+	// Build the request so we can display request in the form.
+	request.build();
+
+	// Do the call.
+	statusFieldSet(fldChangeStatus, '...');
+	bodyProgress(true);
+
+	request.doRequest();
+}
+
 function btnResetRandomPasswordClick(){
 	fldResetPassword.val(getRandomPassword());
 }
@@ -615,6 +719,10 @@ $(function()
 
 	btnChangeGenNewPassword.click(function(){
 		btnChangeGenNewPasswordClick();
+	});
+
+	btnChangePassword.click(function(){
+		btnChangePasswordClick();
 	});
 
 	btnResetRandomPassword.click(function(){
