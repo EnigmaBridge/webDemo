@@ -90,6 +90,29 @@ var requestConfig = {
 	macKey: '2224262820223456789012345678901234567890123456789012345678901234'
 };
 
+var svcSettings = {
+	createUser: {
+		uiod: 0x8855,
+		requestType: 'AUTH_NEWUSERCTX'
+	},
+
+	auth: {
+		hotp: {
+			uiod: 0x5588,
+			requestType: 'AUTH_HOTP'
+		},
+		password: {
+			uiod: 0x5599,
+			requestType: 'AUTH_PASSWD'
+		}
+	},
+
+	updateUser: {
+		uiod: 	0x55aa,
+		requestType: 	'AUTH_UPDATEUSERCTX'
+	}
+};
+
 /**
  * Functions & handlers
  */
@@ -229,9 +252,9 @@ function btnCreateUserClick(){
 	try {
 		var options = getTemplateSettings(fldRegPassword.val());
 		var reqSettings = $.extend(requestConfig, {
-			apiKeyLow4Bytes: 0x8855,
-			userObjectId: 0x8855,
-			callRequestType: 'AUTH_NEWUSERCTX'
+			apiKeyLow4Bytes: 	svcSettings.createUser.uiod,
+			userObjectId:		svcSettings.createUser.uiod,
+			callRequestType: 	svcSettings.createUser.requestType
 		});
 
 		// Create name if not created.
@@ -458,9 +481,9 @@ function btnLoginClick(){
 	// Auth Request
 	var doHotp = isChecked(radLoginHotp);
 	var reqSettings = $.extend(requestConfig, {
-		apiKeyLow4Bytes: 	doHotp ? 0x5588 : 0x5599,
-		userObjectId: 		doHotp ? 0x5588 : 0x5599,
-		callRequestType: 	doHotp ? 'AUTH_HOTP' : 'AUTH_PASSWD'
+		apiKeyLow4Bytes: 	doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+		userObjectId: 		doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+		callRequestType: 	doHotp ? svcSettings.auth.hotp.requestType : svcSettings.auth.password.requestType
 	});
 
 	var authCode = fldLoginPassword.val();
