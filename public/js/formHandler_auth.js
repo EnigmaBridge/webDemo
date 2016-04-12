@@ -654,6 +654,131 @@ function btnResetRandomPasswordClick(){
 	fldResetPassword.val(getRandomPassword());
 }
 
+function resetResetFields(){
+	fldResetQr.html('');
+	fldResetCtx.val('');
+	fldResetCtxCrc.val('');
+}
+
+function resetFailed(data){
+	resetResetFields();
+	statusFieldSet(fldChangeStatus, "Connection error", false);
+}
+
+function resetFinished(record, response){
+	// Response status code handling.
+	var responseStatus = response.hotpStatus;
+	if ((responseStatus === undefined || responseStatus == 0x0) && response.statusCode != eb.comm.status.SW_STAT_OK){
+		responseStatus = response.statusCode;
+	}
+
+	var status = '';
+	if (responseStatus == eb.comm.status.SW_STAT_OK){
+		status += 'Success.';
+	} else {
+		status += 'Failed.';
+	}
+
+	statusFieldSet(fldResetStatus, status, response.hotpStatus == eb.comm.status.SW_STAT_OK);
+
+	// Fail.
+	if (responseStatus != eb.comm.status.SW_STAT_OK){
+		resetResetFields();
+		return;
+	}
+
+	// Success, happy path.
+	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
+	record.password = fldChangeNewPassword.val();
+
+	if (response.hotpKey){
+		record.counter = 1;
+		record.secret = sjcl.codec.hex.fromBits(response.hotpKey);
+		var qrLink2 = eb.comm.hotp.hotpGetQrLink(response.hotpKey, {
+			label: sjcl.codec.hex.fromBits(response.hotpUserId),
+			web: "demo.enigmabridge.com",
+			issuer: "EnigmaBridge",
+			ctr:0,
+			digits: templateHotpDigits,
+			stripPadding: true
+		});
+
+		log("QR link: " + qrLink2);
+		fldResetQr.html("");
+		fldResetQr.qrcode(qrLink2);
+	}
+
+	// Update context values
+	fldResetCtx.val(record.ctx);
+	updateCrc(fldResetCtxCrc, record.ctx);
+	fldLoginCtx.val(record.ctx);
+	updateCrc(fldLoginCtxCrc, record.ctx);
+}
+
+function btnResetPasswordClick(){
+	// Get user record.
+	var uname = fldResetUsername.val();
+	var record = getUserRecord(uname);
+	if (!record){
+		statusFieldSet(fldResetStatus, "User was not found", false);
+		return;
+	}
+
+	// Build request.
+	statusFieldSet(fldResetStatus, '...');
+
+	// Change password Request
+	var isHotp = isChecked(radResetHotp);
+	var reqSettings = $.extend(requestConfig, {
+		apiKeyLow4Bytes: 	svcSettings.updateUser.uiod,
+		userObjectId: 		svcSettings.updateUser.uiod,
+		callRequestType: 	svcSettings.updateUser.requestType
+	});
+	var reqConfig = {hotp:{
+		userId: record.userId,
+		userCtx: record.ctx,
+		method: isHotp ? eb.comm.hotp.USERAUTH_FLAG_HOTP : eb.comm.hotp.USERAUTH_FLAG_PASSWD
+	}};
+
+	if (!isHotp){
+		reqConfig.hotp.passwd = sjcl.hash.sha256.hash(fldResetPassword.val())
+	}
+
+	var request = new eb.comm.hotp.authContextUpdateRequest(reqConfig);
+	request.configure(reqSettings);
+	request.logger = append_message;
+
+	// Callbacks settings.
+	request.done(function(response, requestObj, data) {
+		log("DONE! " + response.toString());
+		resetFinished(record, response);
+
+	}).fail(function(failType, data){
+		log("fail! type=" + failType);
+		if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
+			log("Fail msg: " + data.response.toString());
+			resetFinished(record, data.response);
+
+		} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
+			log("Connection error");
+			resetFailed(data);
+		}
+
+	}).always(function(request, data){
+		log("Change Request finished");
+		bodyProgress(false);
+	});
+
+	// Build the request so we can display request in the form.
+	request.build();
+
+	// Do the call.
+	statusFieldSet(fldResetStatus, '...');
+	bodyProgress(true);
+
+	request.doRequest();
+}
+
 $(function()
 {
 	htmlBody = $("body");
@@ -737,6 +862,10 @@ $(function()
 
 	btnResetRandomPassword.click(function(){
 		btnResetRandomPasswordClick();
+	});
+
+	btnResetPassword.click(function(){
+		btnResetPasswordClick();
 	});
 
 	// Default form validation, not used.
