@@ -838,6 +838,18 @@ function btnResetPasswordClick(){
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Misc
+// ---------------------------------------------------------------------------------------------------------------------
+
+function resetPasswordsRadioHandle(){
+	fldLoginPassword.val('');
+}
+
+function handleResetRadio(){
+	setDisabled(fldResetPassword, isChecked(radResetHotp));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // onLoad
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -891,17 +903,10 @@ $(function()
 	fldResetQr = $('#resetQr');
 
 	// Main buttons handlers.
-	btnInitSystem.click(function(){
-		btnGenerateTemplate();
-	});
+	btnInitSystem.click(btnGenerateTemplate);
 
-	btnRegRandomUsername.click(function(){
-		btnGenNameClick();
-	});
-
-	btnCreateUser.click(function(){
-		btnCreateUserClick();
-	});
+	btnRegRandomUsername.click(btnGenNameClick);
+	btnCreateUser.click(btnCreateUserClick);
 
 	btnLoginPasswordOK.click(function(){
 		btnPasswordGenClick(true);
@@ -911,28 +916,20 @@ $(function()
 		btnPasswordGenClick(false);
 	});
 
-	btnLogin.click(function(){
-		btnLoginClick();
-	});
+	btnLogin.click(btnLoginClick);
 
-	btnChangeGenNewPassword.click(function(){
-		btnChangeGenNewPasswordClick();
-	});
+	btnChangeGenNewPassword.click(btnChangeGenNewPasswordClick);
+	btnChangePassword.click(btnChangePasswordClick);
 
-	btnChangePassword.click(function(){
-		btnChangePasswordClick();
-	});
-
-	btnResetRandomPassword.click(function(){
-		btnResetRandomPasswordClick();
-	});
-
-	btnResetPassword.click(function(){
-		btnResetPasswordClick();
-	});
+	btnResetRandomPassword.click(btnResetRandomPasswordClick);
+	btnResetPassword.click(btnResetPasswordClick);
 
 	// Convenience handlers
-	// TODO: implement.
+	radResetHotp.click(handleResetRadio);
+	radResetPassword.click(handleResetRadio);
+
+	radLoginHotp.click(resetPasswordsRadioHandle);
+	radLoginPassword.click(resetPasswordsRadioHandle);
 
 	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
