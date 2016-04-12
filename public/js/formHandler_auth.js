@@ -75,6 +75,7 @@ authRecord.prototype = {
 // Global map storing username -> Auth record
 var userNameMap = {};
 var templateGenerated = false;
+var doChangeAuthMethod = false;
 
 /**
  * Global section with variables.
@@ -443,12 +444,30 @@ function btnPasswordGenClick(correctOne){
 		return;
 	}
 
+	var doHotp = isChecked(radLoginHotp);
+
+	// If method change is enabled, change method first.
+	if (doChangeAuthMethod){
+		if (doHotp) {
+			radLoginPassword.click();
+		} else {
+			radLoginHotp.click();
+		}
+
+		doHotp = isChecked(radLoginHotp);
+	}
+
+	doChangeAuthMethod = true;
 	if (!correctOne){
-		fldLoginPassword.val('InvalidPassword' + Math.floor(Math.random()*100));
+		if (doHotp){
+			fldLoginPassword.val(sprintf("%06d", Math.floor(Math.random()*Math.pow(10, templateHotpDigits))));
+		} else {
+			fldLoginPassword.val('InvalidPassword' + Math.floor(Math.random()*100));
+		}
+
 		return;
 	}
 
-	var doHotp = isChecked(radLoginHotp);
 	if (doHotp){
 		var hotpSecretBits = sjcl.codec.hex.toBits(record.secret);
 		var hotpCtr = record.counter;
@@ -844,6 +863,7 @@ function btnResetPasswordClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 
 function resetPasswordsRadioHandle(){
+	doChangeAuthMethod = false;
 	fldLoginPassword.val('');
 }
 
