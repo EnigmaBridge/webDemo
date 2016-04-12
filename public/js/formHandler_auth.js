@@ -541,7 +541,13 @@ function btnChangeGenNewPasswordClick(){
 	fldChangeNewPassword.val(getRandomPassword());
 }
 
+function changeResetFields(){
+	fldChangeCtx.val('');
+	fldChangeCtxCrc.val('');
+}
+
 function changeFailed(data){
+	changeResetFields();
 	statusFieldSet(fldChangeStatus, "Connection error", false);
 }
 
@@ -563,8 +569,7 @@ function changeFinished(record, response){
 
 	// Fail.
 	if (responseStatus != eb.comm.status.SW_STAT_OK){
-		fldChangeCtx.val('');
-		fldChangeCtxCrc.val('');
+		changeResetFields();
 		return;
 	}
 
