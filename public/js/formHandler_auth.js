@@ -93,6 +93,12 @@ var requestConfig = {
 /**
  * Functions & handlers
  */
+
+/**
+ * Sets element its success class / background color. Used for status fields.
+ * @param x
+ * @param success if true, success is set, if false failed is set. If undefined, none is set (both classes removed), reset.
+ */
 function successBg(x, success){
 	if (success === undefined){
 		x.removeClass('successBg');
@@ -104,6 +110,17 @@ function successBg(x, success){
 		x.removeClass('successBg');
 		x.addClass('failedBg');
 	}
+}
+
+/**
+ * Sets message to the status field together by setting its success class / background color.
+ * @param x
+ * @param msg
+ * @param success
+ */
+function statusField(x, msg, success){
+	x.val(msg);
+	successBg(x, success);
 }
 
 function log(msg){
@@ -182,8 +199,7 @@ function btnGenerateTemplate(){
 	successBg(templateField);
 	if (!authPasswd && !authHotp){
 		log("Cannot generate system parameters with no auth");
-		templateField.val("Failed - Has to choose either password or HOTP authentication or both");
-		successBg(templateField, false);
+		statusField(templateField, "Failed - Has to choose either password or HOTP authentication or both", false);
 		return;
 	}
 
@@ -198,8 +214,7 @@ function btnGenerateTemplate(){
 		sjcl.codec.hex.fromBits(template)
 		);
 
-	templateField.val(response);
-	successBg(templateField, true);
+	statusField(templateField, response, true);
 	fldRegPassword.prop('disabled', !authPasswd);
 
 	log("Template generated: " + response);
@@ -248,8 +263,7 @@ function btnCreateUserClick(){
 		request.build();
 
 		// Do the call.
-		fldRegUserCtx.val('...');
-		successBg(fldRegUserCtx);
+		statusField(fldRegUserCtx, '...');
 		bodyProgress(true);
 
 		request.doRequest();
@@ -351,8 +365,7 @@ function btnPasswordGenClick(correctOne){
 	var uname = fldLoginUsername.val();
 	var record = getUserRecord(uname);
 	if (record === undefined){
-		fldLoginResult.val("User was not found");
-		successBg(fldLoginResult, false);
+		statusField(fldLoginResult, 'User was not found', false);
 		return;
 	}
 
@@ -378,8 +391,7 @@ function btnPasswordGenClick(correctOne){
 }
 
 function authFailed(data){
-	fldLoginResult.val("Connection error");
-	successBg(fldLoginResult, false);
+	statusField(fldLoginResult, "Connection error", false);
 }
 
 function authFinished(record, response){
@@ -413,8 +425,7 @@ function authFinished(record, response){
 		status += 'Failed, error' + sprintf("0x%04X", responseStatus);
 	}
 
-	fldLoginResult.val(status);
-	successBg(fldLoginResult, response.hotpStatus == eb.comm.status.SW_STAT_OK);
+	statusField(fldLoginResult, status, response.hotpStatus == eb.comm.status.SW_STAT_OK);
 
 	var wasHotp = isChecked(radLoginHotp);
 	if (response.hotpUserCtx){
@@ -437,14 +448,12 @@ function btnLoginClick(){
 	var uname = fldLoginUsername.val();
 	var record = getUserRecord(uname);
 	if (!record){
-		fldLoginResult.val("User was not found");
-		successBg(fldLoginResult, false);
+		statusField(fldLoginResult, "User was not found", false);
 		return;
 	}
 
 	// Build request.
-	fldLoginResult.val("...");
-	successBg(fldLoginResult);
+	statusField(fldLoginResult, "...");
 
 	// Auth Request
 	var doHotp = isChecked(radLoginHotp);
@@ -495,8 +504,6 @@ function btnLoginClick(){
 	request.build();
 
 	// Do the call.
-	fldLoginResult.val('...');
-	successBg(fldLoginResult);
 	bodyProgress(true);
 
 	request.doRequest();
