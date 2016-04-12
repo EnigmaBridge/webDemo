@@ -14,6 +14,7 @@ var logElem;
 var templateField;
 var chkPassword;
 var chkHotp;
+var btnInitSystem;
 
 var fldRegPassword;
 var fldRegUsername;
@@ -652,9 +653,12 @@ $(function()
 {
 	htmlBody = $("body");
 	logElem = $("#log");
+
 	templateField = $('#systemtemplate');
 	chkPassword = $('#ch-method-pwd');
 	chkHotp = $('#ch-method-hotp');
+	btnInitSystem = $("#btnSystemInit");
+
 	fldRegPassword = $('#add_password');
 	fldRegUsername = $('#add_username');
 	btnRegRandomUsername = $('#btnGenRandom');
@@ -662,6 +666,7 @@ $(function()
 	divQrCode = $('#qrCode');
 	fldRegUserCtx = $('#userctxnew');
 	fldRegUserCtxCrc = $('#userctxnew_crc');
+
 	fldLoginUsername = $('#login_username');
 	fldLoginPassword = $('#login_password');
 	btnLoginPasswordWrong = $('#btnLoginWrongPassword');
@@ -693,7 +698,7 @@ $(function()
 	fldResetCtxCrc = $('#input_1160');
 	fldResetQr = $('#resetQr');
 
-	$("#btnSystemInit").click(function(){
+	btnInitSystem.click(function(){
 		btnGenerateTemplate();
 	});
 
@@ -729,18 +734,17 @@ $(function()
 		btnResetRandomPasswordClick();
 	});
 
+	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
     {
      	preventSubmit: true,
      	submitSuccess: function($form, event)
 	 	{
 			event.preventDefault(); // prevent default submit behaviour
-
-			// TODO: custom handling.
          },
          filter: function() // Handle hidden form elements
 		 {
 			 return $(this).is(":visible");
-         },
+         }
 	 });
 });
