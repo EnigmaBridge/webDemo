@@ -273,6 +273,7 @@ function btnGenNameClick(){
 
 function btnCreateUserClick(){
 	try {
+		var authPasswd = isChecked(chkPassword);
 		var options = getTemplateSettings(fldRegPassword.val());
 		var reqSettings = $.extend(requestConfig, {
 			apiKeyLow4Bytes: 	svcSettings.createUser.uiod,
@@ -284,6 +285,12 @@ function btnCreateUserClick(){
 		var usrName = fldRegUsername.val();
 		if (usrName === undefined || usrName.length == 0) {
 			btnGenNameClick();
+		}
+
+		// Set 'test' password if not set
+		var usrPasswd = fldRegPassword.val();
+		if (authPasswd && (usrPasswd === undefined || usrPasswd.length == 0)){
+			fldRegPassword.val('test');
 		}
 
 		log("Create Auth context configuration: " + JSON.stringify(options));
