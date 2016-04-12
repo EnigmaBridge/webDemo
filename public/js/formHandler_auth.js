@@ -443,12 +443,17 @@ function btnPasswordGenClick(correctOne){
 		return;
 	}
 
+	var doHotp = isChecked(radLoginHotp);
 	if (!correctOne){
-		fldLoginPassword.val('InvalidPassword' + Math.floor(Math.random()*100));
+		if (doHotp){
+			fldLoginPassword.val(sprintf("%06d", Math.floor(Math.random()*Math.pow(10, templateHotpDigits))));
+		} else {
+			fldLoginPassword.val('InvalidPassword' + Math.floor(Math.random()*100));
+		}
+
 		return;
 	}
 
-	var doHotp = isChecked(radLoginHotp);
 	if (doHotp){
 		var hotpSecretBits = sjcl.codec.hex.toBits(record.secret);
 		var hotpCtr = record.counter;
