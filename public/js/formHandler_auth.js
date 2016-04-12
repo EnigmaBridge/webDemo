@@ -114,9 +114,9 @@ var svcSettings = {
 	}
 };
 
-/**
- * Functions & handlers
- */
+// ---------------------------------------------------------------------------------------------------------------------
+// Functions & handlers
+// ---------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sets element its success class / background color. Used for status fields.
@@ -147,11 +147,20 @@ function statusFieldSet(x, msg, success){
 	successBg(x, success);
 }
 
+/**
+ * Simple logging method used in this script, passed to request objects for logging.
+ * @param msg
+ */
 function log(msg){
 	console.log(msg);
 	append_message(msg);
 }
 
+/**
+ * Helper method to format current date for the logging.
+ * @param date
+ * @returns {string}
+ */
 function formatDate(date) {
 	var hours = date.getHours();
 	var minutes = date.getMinutes();
@@ -161,11 +170,20 @@ function formatDate(date) {
 	return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear() + " " + strTime;
 }
 
+/**
+ * Appends message to log element
+ * @param msg
+ */
 function append_message(msg) {
 	var newMsg = formatDate(new Date()) + " - " + msg;
 	logElem.val((logElem.val() + "\n" + newMsg).trim());
 }
 
+/**
+ * Returns true if given radio button / checkbox is checked.
+ * @param elem
+ * @returns {*}
+ */
 function isChecked(elem){
 	return elem.is(':checked');
 }
@@ -181,6 +199,10 @@ function bodyProgress(started){
 		htmlBody.removeClass("loading");
 	}
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Create new user
+// ---------------------------------------------------------------------------------------------------------------------
 
 /**
  * Returns basic template settings for Authentication initialization.
@@ -381,6 +403,10 @@ function createUserFailed(failType, data){
 	successBg(fldRegUserCtx, false);
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Authentication
+// ---------------------------------------------------------------------------------------------------------------------
+
 function getUserRecord(uname){
 	return userNameMap[uname];
 }
@@ -533,6 +559,10 @@ function btnLoginClick(){
 	request.doRequest();
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Change password
+// ---------------------------------------------------------------------------------------------------------------------
+
 function getRandomPassword(){
 	return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
 }
@@ -649,6 +679,10 @@ function btnChangePasswordClick(){
 
 	request.doRequest();
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Reset authentication data
+// ---------------------------------------------------------------------------------------------------------------------
 
 function btnResetRandomPasswordClick(){
 	fldResetPassword.val(getRandomPassword());
@@ -779,6 +813,10 @@ function btnResetPasswordClick(){
 	request.doRequest();
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// onLoad
+// ---------------------------------------------------------------------------------------------------------------------
+
 $(function()
 {
 	htmlBody = $("body");
@@ -828,6 +866,7 @@ $(function()
 	fldResetCtxCrc = $('#input_1160');
 	fldResetQr = $('#resetQr');
 
+	// Main buttons handlers.
 	btnInitSystem.click(function(){
 		btnGenerateTemplate();
 	});
@@ -867,6 +906,9 @@ $(function()
 	btnResetPassword.click(function(){
 		btnResetPasswordClick();
 	});
+
+	// Convenience handlers
+	// TODO: implement.
 
 	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
