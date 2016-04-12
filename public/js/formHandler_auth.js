@@ -118,7 +118,7 @@ function successBg(x, success){
  * @param msg
  * @param success
  */
-function statusField(x, msg, success){
+function statusFieldSet(x, msg, success){
 	x.val(msg);
 	successBg(x, success);
 }
@@ -199,7 +199,7 @@ function btnGenerateTemplate(){
 	successBg(templateField);
 	if (!authPasswd && !authHotp){
 		log("Cannot generate system parameters with no auth");
-		statusField(templateField, "Failed - Has to choose either password or HOTP authentication or both", false);
+		statusFieldSet(templateField, "Failed - Has to choose either password or HOTP authentication or both", false);
 		return;
 	}
 
@@ -214,7 +214,7 @@ function btnGenerateTemplate(){
 		sjcl.codec.hex.fromBits(template)
 		);
 
-	statusField(templateField, response, true);
+	statusFieldSet(templateField, response, true);
 	fldRegPassword.prop('disabled', !authPasswd);
 
 	log("Template generated: " + response);
@@ -263,7 +263,7 @@ function btnCreateUserClick(){
 		request.build();
 
 		// Do the call.
-		statusField(fldRegUserCtx, '...');
+		statusFieldSet(fldRegUserCtx, '...');
 		bodyProgress(true);
 
 		request.doRequest();
@@ -365,7 +365,7 @@ function btnPasswordGenClick(correctOne){
 	var uname = fldLoginUsername.val();
 	var record = getUserRecord(uname);
 	if (record === undefined){
-		statusField(fldLoginResult, 'User was not found', false);
+		statusFieldSet(fldLoginResult, 'User was not found', false);
 		return;
 	}
 
@@ -391,7 +391,7 @@ function btnPasswordGenClick(correctOne){
 }
 
 function authFailed(data){
-	statusField(fldLoginResult, "Connection error", false);
+	statusFieldSet(fldLoginResult, "Connection error", false);
 }
 
 function authFinished(record, response){
@@ -425,7 +425,7 @@ function authFinished(record, response){
 		status += 'Failed, error' + sprintf("0x%04X", responseStatus);
 	}
 
-	statusField(fldLoginResult, status, response.hotpStatus == eb.comm.status.SW_STAT_OK);
+	statusFieldSet(fldLoginResult, status, response.hotpStatus == eb.comm.status.SW_STAT_OK);
 
 	var wasHotp = isChecked(radLoginHotp);
 	if (response.hotpUserCtx){
@@ -448,12 +448,12 @@ function btnLoginClick(){
 	var uname = fldLoginUsername.val();
 	var record = getUserRecord(uname);
 	if (!record){
-		statusField(fldLoginResult, "User was not found", false);
+		statusFieldSet(fldLoginResult, "User was not found", false);
 		return;
 	}
 
 	// Build request.
-	statusField(fldLoginResult, "...");
+	statusFieldSet(fldLoginResult, "...");
 
 	// Auth Request
 	var doHotp = isChecked(radLoginHotp);
