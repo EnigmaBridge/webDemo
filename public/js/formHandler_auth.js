@@ -54,9 +54,9 @@ var fldResetCtx;
 var fldResetCtxCrc;
 var fldResetQr;
 
-// Basic HOTP record.
-var hotpRecord = function(){};
-hotpRecord.prototype = {
+// Basic Auth record for one user.
+var authRecord = function(){};
+authRecord.prototype = {
 	userId: undefined,
 	secret: undefined,
 	counter: undefined,
@@ -70,6 +70,7 @@ hotpRecord.prototype = {
 
 };
 
+// Global map storing username -> Auth record
 var userNameMap = {};
 
 /**
@@ -264,7 +265,7 @@ function updateCrc(dstElem, srcData){
 }
 
 function createUserFinished(response){
-	var record = new hotpRecord();
+	var record = new authRecord();
 
 	// Response status code handling.
 	var responseStatus = response.hotpStatus;
