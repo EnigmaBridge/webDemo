@@ -67,7 +67,8 @@ authRecord.prototype = {
 	password: undefined,
 	lastSuccessHotp: undefined,
 	isPasswd: undefined,
-	isHotp: undefined
+	isHotp: undefined,
+	username: undefined
 
 };
 
@@ -372,11 +373,13 @@ function createUserFinished(response){
 	}
 
 	// Success, happy path.
+	var uname = fldRegUsername.val();
 	record.userId = sjcl.codec.hex.fromBits(eb.comm.hotp.userIdToBits(response.hotpUserId));
 	record.ctx = sjcl.codec.hex.fromBits(response.hotpUserCtx);
 	record.password = fldRegPassword.val();
 	record.isHotp = isChecked(chkHotp);
 	record.isPasswd = isChecked(chkPassword);
+	record.username = uname;
 
 	fldRegUserCtx.val(record.ctx);
 	updateCrc(fldRegUserCtxCrc, record.ctx);
@@ -385,8 +388,8 @@ function createUserFinished(response){
 		record.counter = 1;
 		record.secret = sjcl.codec.hex.fromBits(response.hotpKey);
 		var qrLink2 = eb.comm.hotp.hotpGetQrLink(response.hotpKey, {
-			label: sjcl.codec.hex.fromBits(response.hotpUserId),
-			web: "demo.enigmabridge.com",
+			label: uname,
+			web: "enigmabridge.com/testAuth",
 			issuer: "EnigmaBridge",
 			ctr:0,
 			digits: templateHotpDigits,
@@ -399,7 +402,6 @@ function createUserFinished(response){
 	}
 
 	// Update other fields.
-	var uname = fldRegUsername.val();
 	fldLoginUsername.val(uname);
 	fldChangeUsername.val(uname);
 	fldResetUsername.val(uname);
@@ -753,8 +755,8 @@ function resetFinished(record, response){
 		record.counter = 1;
 		record.secret = sjcl.codec.hex.fromBits(response.hotpKey);
 		var qrLink2 = eb.comm.hotp.hotpGetQrLink(response.hotpKey, {
-			label: sjcl.codec.hex.fromBits(response.hotpUserId),
-			web: "demo.enigmabridge.com",
+			label: record.username,
+			web: "enigmabridge.com/testAuth",
 			issuer: "EnigmaBridge",
 			ctr:0,
 			digits: templateHotpDigits,
