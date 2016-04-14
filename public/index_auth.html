@@ -263,7 +263,7 @@
 						<form id="form_95444" novalidate>
 							<div class="form-group">
 								<label>&nbsp;</label>
-								<a class="btn btn-clean  btn-outer-space" id="btnGenRandom" style="display:block">Fill-in Random User Data</a>
+								<a class="btn btn-clean btn-block btn-outer-space" id="btnGenRandom">Fill-in Random User Data</a>
 							</div>
 						</form>
 					</div>
@@ -275,7 +275,7 @@
 								<label class="mg-md">
 									QR for one-time passwords
 								</label>
-								<div class="col-sm-12" id="qrCode">
+								<div class="col-sm-12 text-center" id="qrCode">
 									<img src="img/placeholder-image.png" height="256" width="256" />
 								</div>
 							</div>
@@ -418,7 +418,7 @@
 							</label>
 						</div>
 					</div>
-					<div class="col-sm-2">
+					<div class="col-sm-3">
 						<form id="form_403" novalidate>
 							<div class="form-group">
 								<label>
@@ -438,23 +438,28 @@
 							</div>
 						</form>
 					</div>
-					<div class="col-sm-5">
-						<div class="row">
-							<div class="col-sm-6">
-								<form id="form_18262" novalidate>
-									<label>
-										Let us generate for you
-									</label>
-								</form><a id="btnLoginCorrectPassword" class="btn btn-clean  btn-outer-space">Correct Password</a>
+					<div class="col-sm-2">
+						<form id="form_18262" novalidate>
+							<div class="form-group">
+								<label>
+									Try login with
+								</label>
+								<a id="btnLoginCorrectPassword" class="btn btn-clean btn-block btn-outer-space">Correct
+									Password</a>
 							</div>
-							<div class="col-sm-6">
-								<form id="form_18261" novalidate>
-									<label>
-										Let us generate for you
-									</label>
-								</form><a id="btnLoginWrongPassword" class="btn btn-clean btn-outer-space">Wrong Password</a>
+						</form>
+
+					</div>
+					<div class="col-sm-2">
+						<form id="form_18261" novalidate>
+							<div class="form-group">
+								<label>
+									Try login with
+								</label>
+								<a id="btnLoginWrongPassword" class="btn btn-clean btn-block btn-outer-space">Wrong
+									Password</a>
 							</div>
-						</div>
+						</form>
 					</div>
 				</div><a id="btnLogin" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Logon Now</a>
 				<div class="row voffset">
@@ -532,10 +537,14 @@
 					</div>
 					<div class="col-sm-3">
 						<form id="form_18260" novalidate>
-							<label>
-								Let us generate for you
-							</label>
-						</form><a id="btnChangeGenNewPassword" class="btn btn-clean btn-outer-space pull-left">New Password</a>
+							<div class="form-group">
+								<label>
+									Let us generate for you
+								</label>
+								<a id="btnChangeGenNewPassword"
+								   class="btn btn-clean btn-block btn-outer-space pull-left">New Password</a>
+							</div>
+						</form>
 					</div>
 				</div><a id="btnChangePassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Change Your Password Now</a>
 				<div class="row voffset">
@@ -658,10 +667,13 @@
 					</div>
 					<div class="col-sm-3">
 						<form id="form_1826" novalidate>
-							<label>
-								Let us generate for you
-							</label>
-						</form><a id="btnGenNewPassword" class="btn btn-clean btn-outer-space">Random New Password</a>
+							<div class="form-group">
+								<label>
+									Let us generate for you
+								</label>
+								<a id="btnGenNewPassword" class="btn btn-clean btn-block btn-outer-space">Random New Password</a>
+							</div>
+						</form>
 					</div>
 				</div><a id="btnResetPassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Password Reset Now</a>
 				<div class="row voffset">
@@ -701,7 +713,7 @@
 								<label>
 									QR code for new HOTP
 								</label>
-								<div id="resetQr"><img src="img/placeholder-image.png" width="256" height="256" /></div>
+								<div id="resetQr" class="text-center"><img src="img/placeholder-image.png" width="256" height="256" /></div>
 							</div>
 						</form>
 					</div>
