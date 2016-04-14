@@ -195,9 +195,10 @@ function isChecked(elem){
 /**
  * Returns if given element is completelly visible on the screen.
  * @param elem
+ * @param partially if true partially visibility is OK -> no scrolling
  */
-function isVisibleOnScreen(elem){
-	return elem.visible(true, false, "both");
+function isVisibleOnScreen(elem, partially){
+	return elem.visible(partially === undefined ? false : partially, false, "both");
 }
 
 /**
@@ -218,9 +219,10 @@ function scrollToElementBottom(D)
 /**
  * Scrolls to element if not visible
  * @param elem
+ * @param partially if true partially visibility is OK -> no scrolling
  */
-function scrollToIfNotVisible(elem){
-	if (!isVisibleOnScreen(elem)){
+function scrollToIfNotVisible(elem, partially){
+	if (!isVisibleOnScreen(elem, partially)){
 		scrollToElementBottom(elem);
 	}
 }
@@ -405,7 +407,7 @@ function createUserFinished(response){
 	}
 
 	if (isChecked(chkHotp)) {
-		scrollToIfNotVisible(divQrCode);
+		scrollToIfNotVisible(divQrCode, true);
 	} else {
 		scrollToIfNotVisible(fldRegUserCtx);
 	}
