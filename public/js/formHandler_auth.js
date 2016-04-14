@@ -76,6 +76,7 @@ authRecord.prototype = {
 var userNameMap = {};
 var templateGenerated = false;
 var doChangeAuthMethod = false;
+var doAutogenerateTemplateSettingsOnChange = false;
 
 /**
  * Global section with variables.
@@ -276,6 +277,7 @@ function btnGenerateTemplate(){
 	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
 	templateGenerated = true;
+	doAutogenerateTemplateSettingsOnChange = true;
 
 	log("Template generated: " + response);
 }
@@ -876,6 +878,11 @@ function handleMethodRadio(){
 	statusFieldSet(templateField, '');
 	setDisabled(fldRegUsername, true);
 	setDisabled(fldRegPassword, true);
+
+	// Auto regenerate
+	if (doAutogenerateTemplateSettingsOnChange){
+		btnGenerateTemplate();
+	}
 }
 
 function resetPasswordsRadioHandle(){
