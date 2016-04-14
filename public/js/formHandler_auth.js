@@ -282,6 +282,7 @@ function btnGenerateTemplate(){
 function btnGenNameClick(){
 	var name = names[Math.floor(Math.random()*names.length)];
 	fldRegUsername.val(name);
+	fldRegPassword.val(name);
 }
 
 function btnCreateUserClick(){
