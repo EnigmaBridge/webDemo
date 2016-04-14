@@ -193,6 +193,39 @@ function isChecked(elem){
 }
 
 /**
+ * Returns if given element is completelly visible on the screen.
+ * @param elem
+ */
+function isVisibleOnScreen(elem){
+	return elem.visible(true, false, "both");
+}
+
+/**
+ * Scrolls given element in such a way it is visible on the bottom.
+ * @param D
+ */
+function scrollToElementBottom(D)
+{
+	var top = D.offset().top - 200;
+	if($('.sticky-nav').length) // Sticky Nav in use
+	{
+		D = D-100;
+	}
+
+	$('html,body').animate({scrollTop:top}, 'slow');
+}
+
+/**
+ * Scrolls to element if not visible
+ * @param elem
+ */
+function scrollToIfNotVisible(elem){
+	if (!isVisibleOnScreen(elem)){
+		scrollToElementBottom(elem);
+	}
+}
+
+/**
  * Sets given element as disabled.
  * @param elem
  * @param disabled
@@ -279,6 +312,8 @@ function btnGenerateTemplate(){
 	templateGenerated = true;
 	doAutogenerateTemplateSettingsOnChange = true;
 
+	// Scrolling
+	scrollToIfNotVisible(templateField);
 	log("Template generated: " + response);
 }
 
@@ -369,6 +404,12 @@ function createUserFinished(response){
 		status += 'Failed.';
 	}
 
+	if (isChecked(chkHotp)) {
+		scrollToIfNotVisible(divQrCode);
+	} else {
+		scrollToIfNotVisible(fldRegUserCtx);
+	}
+
 	fldRegUserCtx.val(status);
 	successBg(fldRegUserCtx, response.hotpStatus == eb.comm.status.SW_STAT_OK);
 
@@ -434,6 +475,7 @@ function createUserFailed(failType, data){
 		fldRegUserCtx.val("Request failed");
 	}
 
+	scrollToIfNotVisible(fldRegUserCtx);
 	successBg(fldRegUserCtx, false);
 }
 
@@ -498,6 +540,7 @@ function btnPasswordGenClick(correctOne){
 
 function authFailed(data){
 	statusFieldSet(fldLoginResult, "Connection error", false);
+	scrollToIfNotVisible(fldLoginResult);
 }
 
 function authFinished(record, response){
@@ -547,6 +590,8 @@ function authFinished(record, response){
 		record.counter += 1;
 		log("HOTP counter incremented to " + record.counter);
 	}
+
+	scrollToIfNotVisible(fldLoginResult);
 }
 
 function btnLoginClick(){
@@ -643,6 +688,7 @@ function changeResetFields(){
 function changeFailed(data){
 	changeResetFields();
 	statusFieldSet(fldChangeStatus, "Connection error", false);
+	scrollToIfNotVisible(fldChangeStatus);
 }
 
 function changeFinished(record, response){
@@ -680,6 +726,8 @@ function changeFinished(record, response){
 	updateCrc(fldChangeCtxCrc, record.ctx);
 	fldLoginCtx.val(record.ctx);
 	updateCrc(fldLoginCtxCrc, record.ctx);
+
+	scrollToIfNotVisible(fldChangeStatus);
 }
 
 function btnChangePasswordClick(){
@@ -695,7 +743,7 @@ function btnChangePasswordClick(){
 	statusFieldSet(fldChangeStatus, '...');
 
 	// Is password method allowed for this user?
-	if (!record.isPassword){
+	if (!record.isPasswd){
 		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
 		return;
 	}
@@ -771,6 +819,7 @@ function resetResetFields(){
 function resetFailed(data){
 	resetResetFields();
 	statusFieldSet(fldResetStatus, "Connection error", false);
+	scrollToIfNotVisible(fldResetStatus);
 }
 
 function resetFinished(record, response){
@@ -827,6 +876,8 @@ function resetFinished(record, response){
 	updateCrc(fldResetCtxCrc, record.ctx);
 	fldLoginCtx.val(record.ctx);
 	updateCrc(fldLoginCtxCrc, record.ctx);
+
+	scrollToIfNotVisible(fldResetStatus);
 }
 
 function btnResetPasswordClick(){
