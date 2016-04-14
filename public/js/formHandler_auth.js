@@ -556,69 +556,77 @@ function authFinished(record, response){
 }
 
 function btnLoginClick(){
-	// Get user record.
-	var uname = fldLoginUsername.val();
-	var record = getUserRecord(uname);
-	if (!record){
-		statusFieldSet(fldLoginResult, "User was not found", false);
-		return;
-	}
-
-	// Build request.
-	statusFieldSet(fldLoginResult, "...");
-
-	// Auth Request
-	var doHotp = isChecked(radLoginHotp);
-	var reqSettings = $.extend(requestConfig, {
-		apiKeyLow4Bytes: 	doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
-		userObjectId: 		doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
-		callRequestType: 	doHotp ? svcSettings.auth.hotp.requestType : svcSettings.auth.password.requestType
-	});
-
-	var authCode = fldLoginPassword.val();
-	var reqConfig = {hotp:{
-		'userId': record.userId,
-		'userCtx': record.ctx
-	}};
-
-	if (doHotp){
-		reqConfig.hotp.hotpCode = authCode;
-	} else {
-		reqConfig.hotp.passwd = sjcl.hash.sha256.hash(authCode);
-	}
-
-	var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
-	request.configure(reqSettings);
-	request.logger = append_message;
-
-	// Callbacks settings.
-	request.done(function(response, requestObj, data) {
-		log("DONE! " + response.toString());
-		authFinished(record, response);
-
-	}).fail(function(failType, data){
-		log("fail! type=" + failType);
-		if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
-			log("Fail msg: " + data.response.toString());
-			authFinished(record, data.response);
-
-		} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
-			log("Connection error");
-			authFailed(data);
+	try {
+		// Get user record.
+		var uname = fldLoginUsername.val();
+		var record = getUserRecord(uname);
+		if (!record) {
+			statusFieldSet(fldLoginResult, "User was not found", false);
+			return;
 		}
 
-	}).always(function(request, data){
-		log("Auth Request finished");
-		bodyProgress(false);
-	});
+		// Build request.
+		statusFieldSet(fldLoginResult, "...");
 
-	// Build the request so we can display request in the form.
-	request.build();
+		// Auth Request
+		var doHotp = isChecked(radLoginHotp);
+		var reqSettings = $.extend(requestConfig, {
+			apiKeyLow4Bytes: doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+			userObjectId: doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+			callRequestType: doHotp ? svcSettings.auth.hotp.requestType : svcSettings.auth.password.requestType
+		});
 
-	// Do the call.
-	bodyProgress(true);
+		var authCode = fldLoginPassword.val();
+		var reqConfig = {
+			hotp: {
+				'userId': record.userId,
+				'userCtx': record.ctx
+			}
+		};
 
-	request.doRequest();
+		if (doHotp) {
+			reqConfig.hotp.hotpCode = authCode;
+		} else {
+			reqConfig.hotp.passwd = sjcl.hash.sha256.hash(authCode);
+		}
+
+		var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
+		request.configure(reqSettings);
+		request.logger = append_message;
+
+		// Callbacks settings.
+		request.done(function (response, requestObj, data) {
+			log("DONE! " + response.toString());
+			authFinished(record, response);
+
+		}).fail(function (failType, data) {
+			log("fail! type=" + failType);
+			if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED) {
+				log("Fail msg: " + data.response.toString());
+				authFinished(record, data.response);
+
+			} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION) {
+				log("Connection error");
+				authFailed(data);
+			}
+
+		}).always(function (request, data) {
+			log("Auth Request finished");
+			bodyProgress(false);
+		});
+
+		// Build the request so we can display request in the form.
+		request.build();
+
+		// Do the call.
+		bodyProgress(true);
+
+		request.doRequest();
+	} catch(e){
+		log("Exception: " + e);
+		statusFieldSet(fldLoginResult, "Exception: " + e, false);
+		throw e;
+	}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
