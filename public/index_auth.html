@@ -276,31 +276,22 @@
 					</div>
 				</div><a class="btn  btn-lg btn-rich-electric-blue btn-block btn-clean" id="btnCreateUser">Create New User</a>
 				<div class="row">
-					<div class="col-sm-7">
-						<form id="form_1860" novalidate>
+					<div class="col-sm-4">
+						<form id="qr_code" novalidate>
 							<div class="form-group">
-								<label class="mg-sm">
-									User context (stored at the backend)
+								<label class="mg-md">
+									QR for one-time passwords
 								</label>
 							</div>
+							<div class="row">
+								<div class="col-sm-12" id="qrCode">
+									<img src="img/placeholder-image.png" height="256" width="256" />
+								</div>
+							</div>
 						</form>
-						<div class="row">
-							<div class="col-sm-9">
-								<form id="form_677" novalidate>
-									<div class="form-group">
-										<input class="form-control" placeholder="Length of the context" id="userctxnew" data-validation-required-message="userctxnew is required." readonly="readonly"/>
-									</div>
-								</form>
-							</div>
-							<div class="col-sm-3">
-								<form id="form_2865" novalidate>
-									<div class="form-group">
-										<input class="form-control" id="userctxnew_crc" data-validation-required-message="userctxnew_crc is required." placeholder="Check code" readonly="readonly"/>
-									</div>
-								</form>
-							</div>
-						</div>
-						<p>
+					</div>
+					<div class="col-sm-7">
+						<p class="mg-md">
 							The following smart phone apps work with Enigma Bridge one-time password (OTP) system:
 						</p>
 						<ul>
@@ -340,20 +331,30 @@
 								</p>
 							</li>
 						</ul>
-					</div>
-					<div class="col-sm-5">
-						<form id="qr_code" novalidate>
+
+						<form id="form_1860" novalidate>
 							<div class="form-group">
-								<label class="mg-md">
-									QR for one-time passwords
+								<label class="mg-sm">
+									User context (stored at the backend)
 								</label>
 							</div>
-							<div class="row">
-								<div class="col-sm-12" id="qrCode">
-									<img src="img/placeholder-image.png" height="256" width="256" />
-								</div>
-							</div>
 						</form>
+						<div class="row">
+							<div class="col-sm-9">
+								<form id="form_677" novalidate>
+									<div class="form-group">
+										<input class="form-control" placeholder="Length of the context" id="userctxnew" data-validation-required-message="userctxnew is required." readonly="readonly"/>
+									</div>
+								</form>
+							</div>
+							<div class="col-sm-3">
+								<form id="form_2865" novalidate>
+									<div class="form-group">
+										<input class="form-control" id="userctxnew_crc" data-validation-required-message="userctxnew_crc is required." placeholder="Check code" readonly="readonly"/>
+									</div>
+								</form>
+							</div>
+						</div>
 					</div>
 				</div>
 				<div class="divider-h">
