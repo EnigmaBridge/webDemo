@@ -653,6 +653,10 @@ function changeFinished(record, response){
 	var status = '';
 	if (responseStatus == eb.comm.status.SW_STAT_OK){
 		status += 'Success.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_NOT_ALLOWED) {
+		status += 'Failed - authentication method not allowed.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_UNKNOWN) {
+		status += 'Failed - authentication method unknown.';
 	} else {
 		status += 'Failed.';
 	}
@@ -771,6 +775,10 @@ function resetFinished(record, response){
 	var status = '';
 	if (responseStatus == eb.comm.status.SW_STAT_OK){
 		status += 'Success.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_NOT_ALLOWED) {
+		status += 'Failed - authentication method not allowed.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_UNKNOWN) {
+		status += 'Failed - authentication method unknown.';
 	} else {
 		status += 'Failed.';
 	}
