@@ -743,7 +743,7 @@ function btnChangePasswordClick(){
 	statusFieldSet(fldChangeStatus, '...');
 
 	// Is password method allowed for this user?
-	if (!record.isPassword){
+	if (!record.isPasswd){
 		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
 		return;
 	}
