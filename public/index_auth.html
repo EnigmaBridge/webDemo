@@ -188,46 +188,39 @@
 					</div>
 				</div>
 				<div class="divider-h">
-					<span class="divider divider-half"></span>
+					<span class="divider"></span>
 				</div>
 				<div class="row">
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-4">
-								<a class="btn btn-clean btn-isabelline" onclick="scrollToTarget('#step1')">Setup System</a>
-							</div>
-							<div class="col-sm-2">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
-							</div>
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
+					<div class="col-sm-12">
+						<div class="col-sm-1 col-sm-05">
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-isabelline" onclick="scrollToTarget('#step1')">System Setup</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
 						</div>
-					</div>
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-12">
-								<div class="row">
-									<div class="col-sm-3">
-										<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Login</a>
-									</div>
-									<div class="col-sm-2">
-										<div class="text-center">
-											<span class="fa fa-rotate-left icon-md icon-rich-electric-blue"></span>
-										</div>
-									</div>
-									<div class="col-sm-7">
-										<a class="btn btn-clean btn-rich-electric-blue pull-left" onclick="scrollToTarget('#step3')">Reset</a>
-									</div>
-								</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
+						</div>
+
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-undo icon-md icon-md-inline icon-rich-electric-blue"></span>
+							</div>
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step3')">Reset</a>
 						</div>
 					</div>
 				</div>
@@ -267,40 +260,29 @@
 						</form>
 					</div>
 					<div class="col-sm-4">
-						<p class="text-center">
-							<strong>Get a random username here</strong>
-						</p>
-						<div class="text-center">
-							<a class="btn btn-clean  btn-outer-space" id="btnGenRandom">Generate User</a>
-						</div>
+						<form id="form_95444" novalidate>
+							<div class="form-group">
+								<label>&nbsp;</label>
+								<a class="btn btn-clean  btn-outer-space" id="btnGenRandom" style="display:block">Fill-in Random User Data</a>
+							</div>
+						</form>
 					</div>
 				</div><a class="btn  btn-lg btn-rich-electric-blue btn-block btn-clean" id="btnCreateUser">Create New User</a>
 				<div class="row">
-					<div class="col-sm-7">
-						<form id="form_1860" novalidate>
+					<div class="col-sm-4">
+						<form id="qr_code" novalidate>
 							<div class="form-group">
-								<label class="mg-sm">
-									User context (stored at the backend)
+								<label class="mg-md">
+									QR for one-time passwords
 								</label>
+								<div class="col-sm-12" id="qrCode">
+									<img src="img/placeholder-image.png" height="256" width="256" />
+								</div>
 							</div>
 						</form>
-						<div class="row">
-							<div class="col-sm-9">
-								<form id="form_677" novalidate>
-									<div class="form-group">
-										<input class="form-control" placeholder="Length of the context" id="userctxnew" data-validation-required-message="userctxnew is required." readonly="readonly"/>
-									</div>
-								</form>
-							</div>
-							<div class="col-sm-3">
-								<form id="form_2865" novalidate>
-									<div class="form-group">
-										<input class="form-control" id="userctxnew_crc" data-validation-required-message="userctxnew_crc is required." placeholder="Check code" readonly="readonly"/>
-									</div>
-								</form>
-							</div>
-						</div>
-						<p>
+					</div>
+					<div class="col-sm-7">
+						<p class="mg-md">
 							The following smart phone apps work with Enigma Bridge one-time password (OTP) system:
 						</p>
 						<ul>
@@ -341,56 +323,68 @@
 							</li>
 						</ul>
 					</div>
-					<div class="col-sm-5">
-						<form id="qr_code" novalidate>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+					<form id="form_1860" novalidate>
+						<div class="form-group">
+							<label class="mg-sm">
+								User context (stored at the backend)
+							</label>
+						</div>
+					</form>
+					</div>
+
+					<div class="col-sm-9">
+						<form id="form_677" novalidate>
 							<div class="form-group">
-								<label class="mg-md">
-									QR for one-time passwords
-								</label>
-							</div>
-							<div class="row">
-								<div class="col-sm-12" id="qrCode">
-									<img src="img/placeholder-image.png" height="256" width="256" />
-								</div>
+								<input class="form-control" placeholder="Length of the context" id="userctxnew" data-validation-required-message="userctxnew is required." readonly="readonly"/>
 							</div>
 						</form>
 					</div>
+					<div class="col-sm-3">
+						<form id="form_2865" novalidate>
+							<div class="form-group">
+								<input class="form-control" id="userctxnew_crc" data-validation-required-message="userctxnew_crc is required." placeholder="Check code" readonly="readonly"/>
+							</div>
+						</form>
+					</div>
+
 				</div>
 				<div class="divider-h">
 					<span class="divider"></span>
 				</div>
 				<div class="row">
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#step1')">Setup System</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
-							</div>
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-isabelline" onclick="scrollToTarget('#step2')">Add User</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
+					<div class="col-sm-12">
+						<div class="col-sm-1 col-sm-05">
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step1')">System Setup</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
 						</div>
-					</div>
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Login</a>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-isabelline" onclick="scrollToTarget('#step2')">Add User</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-2">
-								<span class="fa fa-rotate-left icon-md pull-left icon-rich-electric-blue"></span>
+						</div>
+
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-undo icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-7">
-								<a class="btn btn-clean  btn-rich-electric-blue" onclick="scrollToTarget('#step3')">Reset</a>
-							</div>
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step3')">Reset</a>
 						</div>
 					</div>
 				</div>
@@ -447,19 +441,23 @@
 					<div class="col-sm-5">
 						<div class="row">
 							<div class="col-sm-6">
-								<p>
-									<strong>Let us generate for you</strong>
-								</p><a id="btnLoginCorrectPassword" class="btn btn-clean  btn-outer-space">Correct Password</a>
+								<form id="form_18262" novalidate>
+									<label>
+										Let us generate for you
+									</label>
+								</form><a id="btnLoginCorrectPassword" class="btn btn-clean  btn-outer-space">Correct Password</a>
 							</div>
 							<div class="col-sm-6">
-								<p>
-									<strong>Let us generate for you</strong>
-								</p><a id="btnLoginWrongPassword" class="btn btn-clean btn-outer-space">Wrong Password</a>
+								<form id="form_18261" novalidate>
+									<label>
+										Let us generate for you
+									</label>
+								</form><a id="btnLoginWrongPassword" class="btn btn-clean btn-outer-space">Wrong Password</a>
 							</div>
 						</div>
 					</div>
 				</div><a id="btnLogin" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Logon Now</a>
-				<div class="row">
+				<div class="row voffset">
 					<div class="col-sm-5">
 						<form id="form_833" novalidate>
 							<div class="form-group">
@@ -533,9 +531,11 @@
 						</form>
 					</div>
 					<div class="col-sm-3">
-						<p>
-							<strong>Let us generate for you</strong>
-						</p><a id="btnChangeGenNewPassword" class="btn btn-clean btn-outer-space pull-left">New Password</a>
+						<form id="form_18260" novalidate>
+							<label>
+								Let us generate for you
+							</label>
+						</form><a id="btnChangeGenNewPassword" class="btn btn-clean btn-outer-space pull-left">New Password</a>
 					</div>
 				</div><a id="btnChangePassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Change Your Password Now</a>
 				<div class="row voffset">
@@ -574,39 +574,36 @@
 					<span class="divider"></span>
 				</div>
 				<div class="row">
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#step1')">System Setup</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
-							</div>
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
+					<div class="col-sm-12">
+						<div class="col-sm-1 col-sm-05">
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step1')">System Setup</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
 						</div>
-					</div>
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean  btn-isabelline" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-undo icon-md icon-rich-electric-blue"></span>
-								</div>
+						</div>
+
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-isabelline" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-undo icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-6">
-								<a class="btn btn-clean  btn-rich-electric-blue" onclick="scrollToTarget('#step3')">Reset</a>
-							</div>
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step3')">Reset</a>
 						</div>
 					</div>
 				</div>
@@ -627,11 +624,6 @@
 				<div class="row">
 					<div class="col-sm-2">
 						<form id="form_162" novalidate>
-							<div class="form-group">
-								<label>
-									Select one
-								</label>
-							</div>
 							<div class="radio">
 								<label>
 									<input type="radio" name="rsg-reset" value="rs-reset-pwd" id="rs_reset_pwd" checked="checked"/>Passwords
@@ -666,15 +658,13 @@
 					</div>
 					<div class="col-sm-3">
 						<form id="form_1826" novalidate>
-							<div class="form-group">
-								<label>
-									Let us generate for you
-								</label>
-							</div>
+							<label>
+								Let us generate for you
+							</label>
 						</form><a id="btnGenNewPassword" class="btn btn-clean btn-outer-space">Random New Password</a>
 					</div>
 				</div><a id="btnResetPassword" class="btn btn-clean  btn-lg btn-rich-electric-blue btn-block">Password Reset Now</a>
-				<div class="row">
+				<div class="row voffset">
 					<div class="col-sm-3">
 						<form id="form_1856" novalidate>
 							<div class="form-group">
@@ -711,48 +701,45 @@
 								<label>
 									QR code for new HOTP
 								</label>
+								<div id="resetQr"><img src="img/placeholder-image.png" width="256" height="256" /></div>
 							</div>
 						</form>
-						<div id="resetQr"><img src="img/placeholder-image.png" width="256" height="256" /></div>
 					</div>
 				</div>
 				<div class="divider-h">
 					<span class="divider"></span>
 				</div>
 				<div class="row">
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean  btn-rich-electric-blue" onclick="scrollToTarget('#step1')">System Setup</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
-							</div>
-							<div class="col-sm-3">
-								<a class="btn btn-clean btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
-							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-arrow-right icon-md icon-rich-electric-blue"></span>
-								</div>
+					<div class="col-sm-12">
+						<div class="col-sm-1 col-sm-05">
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step1')">System Setup</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
 						</div>
-					</div>
-					<div class="col-sm-6">
-						<div class="row">
-							<div class="col-sm-3">
-								<a class="btn btn-clean  btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#step2')">Add User</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-arrow-right icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-3">
-								<div class="text-center">
-									<span class="fa fa-undo icon-md icon-rich-electric-blue"></span>
-								</div>
+						</div>
+
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-rich-electric-blue" onclick="scrollToTarget('#dailyuse')">Logon</a>
+						</div>
+						<div class="col-sm-1">
+							<div class="text-center">
+								<span class="fa fa-undo icon-md icon-md-inline icon-rich-electric-blue"></span>
 							</div>
-							<div class="col-sm-6">
-								<a class="btn btn-clean btn-isabelline" onclick="scrollToTarget('#step3')">Reset</a>
-							</div>
+						</div>
+						<div class="col-sm-2">
+							<a class="btn btn-clean btn-block btn-isabelline" onclick="scrollToTarget('#step3')">Reset</a>
 						</div>
 					</div>
 				</div>

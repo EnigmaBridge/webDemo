@@ -76,6 +76,7 @@ authRecord.prototype = {
 var userNameMap = {};
 var templateGenerated = false;
 var doChangeAuthMethod = false;
+var doAutogenerateTemplateSettingsOnChange = false;
 
 /**
  * Global section with variables.
@@ -273,15 +274,25 @@ function btnGenerateTemplate(){
 		);
 
 	statusFieldSet(templateField, response, true);
+	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
 	templateGenerated = true;
+	doAutogenerateTemplateSettingsOnChange = true;
 
 	log("Template generated: " + response);
 }
 
 function btnGenNameClick(){
+	if (!templateGenerated){
+		scrollToTarget('#step1');
+		return;
+	}
+
 	var name = names[Math.floor(Math.random()*names.length)];
 	fldRegUsername.val(name);
+
+	// Is password enabled?
+	fldRegPassword.val(isChecked(chkPassword) ? name : '');
 }
 
 function btnCreateUserClick(){
@@ -290,8 +301,6 @@ function btnCreateUserClick(){
 			throw new eb.exception.invalid("You must generate template first");
 		}
 
-		var authPasswd = isChecked(chkPassword);
-		var options = getTemplateSettings(fldRegPassword.val());
 		var reqSettings = $.extend(requestConfig, {
 			apiKeyLow4Bytes: 	svcSettings.createUser.uiod,
 			userObjectId:		svcSettings.createUser.uiod,
@@ -304,13 +313,9 @@ function btnCreateUserClick(){
 			btnGenNameClick();
 		}
 
-		// Set 'test' password if not set
-		var usrPasswd = fldRegPassword.val();
-		if (authPasswd && (usrPasswd === undefined || usrPasswd.length == 0)){
-			fldRegPassword.val('test');
-		}
-
+		var options = getTemplateSettings(fldRegPassword.val());
 		log("Create Auth context configuration: " + JSON.stringify(options));
+		
 		var request = new eb.comm.hotp.newHotpUserRequest({hotp:options});
 		request.configure(reqSettings);
 		request.logger = append_message;
@@ -412,6 +417,10 @@ function createUserFinished(response){
 		// TODO: disable password change.
 	}
 
+	if (record.isPasswd && !record.isHotp){
+		radLoginPassword.click();
+	}
+
 	// Store this record to the local database.
 	userNameMap[uname] = record;
 }
@@ -457,7 +466,7 @@ function btnPasswordGenClick(correctOne){
 		doHotp = isChecked(radLoginHotp);
 	}
 
-	doChangeAuthMethod = true;
+	doChangeAuthMethod = record.isPasswd && record.isHotp;
 	if (!correctOne){
 		if (doHotp){
 			fldLoginPassword.val(sprintf("%06d", Math.floor(Math.random()*Math.pow(10, templateHotpDigits))));
@@ -466,6 +475,10 @@ function btnPasswordGenClick(correctOne){
 		}
 
 		return;
+	}
+
+	if (doHotp && !record.isHotp){
+		statusFieldSet(fldLoginResult, 'HOTP method not enabled for this user', false);
 	}
 
 	if (doHotp){
@@ -537,69 +550,77 @@ function authFinished(record, response){
 }
 
 function btnLoginClick(){
-	// Get user record.
-	var uname = fldLoginUsername.val();
-	var record = getUserRecord(uname);
-	if (!record){
-		statusFieldSet(fldLoginResult, "User was not found", false);
-		return;
-	}
-
-	// Build request.
-	statusFieldSet(fldLoginResult, "...");
-
-	// Auth Request
-	var doHotp = isChecked(radLoginHotp);
-	var reqSettings = $.extend(requestConfig, {
-		apiKeyLow4Bytes: 	doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
-		userObjectId: 		doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
-		callRequestType: 	doHotp ? svcSettings.auth.hotp.requestType : svcSettings.auth.password.requestType
-	});
-
-	var authCode = fldLoginPassword.val();
-	var reqConfig = {hotp:{
-		'userId': record.userId,
-		'userCtx': record.ctx
-	}};
-
-	if (doHotp){
-		reqConfig.hotp.hotpCode = authCode;
-	} else {
-		reqConfig.hotp.passwd = sjcl.hash.sha256.hash(authCode);
-	}
-
-	var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
-	request.configure(reqSettings);
-	request.logger = append_message;
-
-	// Callbacks settings.
-	request.done(function(response, requestObj, data) {
-		log("DONE! " + response.toString());
-		authFinished(record, response);
-
-	}).fail(function(failType, data){
-		log("fail! type=" + failType);
-		if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED){
-			log("Fail msg: " + data.response.toString());
-			authFinished(record, data.response);
-
-		} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION){
-			log("Connection error");
-			authFailed(data);
+	try {
+		// Get user record.
+		var uname = fldLoginUsername.val();
+		var record = getUserRecord(uname);
+		if (!record) {
+			statusFieldSet(fldLoginResult, "User was not found", false);
+			return;
 		}
 
-	}).always(function(request, data){
-		log("Auth Request finished");
-		bodyProgress(false);
-	});
+		// Build request.
+		statusFieldSet(fldLoginResult, "...");
 
-	// Build the request so we can display request in the form.
-	request.build();
+		// Auth Request
+		var doHotp = isChecked(radLoginHotp);
+		var reqSettings = $.extend(requestConfig, {
+			apiKeyLow4Bytes: doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+			userObjectId: doHotp ? svcSettings.auth.hotp.uiod : svcSettings.auth.password.uiod,
+			callRequestType: doHotp ? svcSettings.auth.hotp.requestType : svcSettings.auth.password.requestType
+		});
 
-	// Do the call.
-	bodyProgress(true);
+		var authCode = fldLoginPassword.val();
+		var reqConfig = {
+			hotp: {
+				'userId': record.userId,
+				'userCtx': record.ctx
+			}
+		};
 
-	request.doRequest();
+		if (doHotp) {
+			reqConfig.hotp.hotpCode = authCode;
+		} else {
+			reqConfig.hotp.passwd = sjcl.hash.sha256.hash(authCode);
+		}
+
+		var request = new eb.comm.hotp.authHotpUserRequest(reqConfig);
+		request.configure(reqSettings);
+		request.logger = append_message;
+
+		// Callbacks settings.
+		request.done(function (response, requestObj, data) {
+			log("DONE! " + response.toString());
+			authFinished(record, response);
+
+		}).fail(function (failType, data) {
+			log("fail! type=" + failType);
+			if (failType == eb.comm.status.PDATA_FAIL_RESPONSE_FAILED) {
+				log("Fail msg: " + data.response.toString());
+				authFinished(record, data.response);
+
+			} else if (failType == eb.comm.status.PDATA_FAIL_CONNECTION) {
+				log("Connection error");
+				authFailed(data);
+			}
+
+		}).always(function (request, data) {
+			log("Auth Request finished");
+			bodyProgress(false);
+		});
+
+		// Build the request so we can display request in the form.
+		request.build();
+
+		// Do the call.
+		bodyProgress(true);
+
+		request.doRequest();
+	} catch(e){
+		log("Exception: " + e);
+		statusFieldSet(fldLoginResult, "Exception: " + e, false);
+		throw e;
+	}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -634,6 +655,10 @@ function changeFinished(record, response){
 	var status = '';
 	if (responseStatus == eb.comm.status.SW_STAT_OK){
 		status += 'Success.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_NOT_ALLOWED) {
+		status += 'Failed - authentication method not allowed.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_UNKNOWN) {
+		status += 'Failed - authentication method unknown.';
 	} else {
 		status += 'Failed.';
 	}
@@ -668,6 +693,12 @@ function btnChangePasswordClick(){
 
 	// Build request.
 	statusFieldSet(fldChangeStatus, '...');
+
+	// Is password method allowed for this user?
+	if (!record.isPassword){
+		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
+		return;
+	}
 
 	// Check current password
 	if (fldChangeCurrentPassword.val() != record.password){
@@ -752,6 +783,10 @@ function resetFinished(record, response){
 	var status = '';
 	if (responseStatus == eb.comm.status.SW_STAT_OK){
 		status += 'Success.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_NOT_ALLOWED) {
+		status += 'Failed - authentication method not allowed.';
+	} else if (responseStatus == eb.comm.status.SW_AUTHMETHOD_UNKNOWN) {
+		status += 'Failed - authentication method unknown.';
 	} else {
 		status += 'Failed.';
 	}
@@ -861,6 +896,18 @@ function btnResetPasswordClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 // Misc
 // ---------------------------------------------------------------------------------------------------------------------
+function handleMethodRadio(){
+	// Auth system changed - reset generated template.
+	templateGenerated = false;
+	statusFieldSet(templateField, '');
+	setDisabled(fldRegUsername, true);
+	setDisabled(fldRegPassword, true);
+
+	// Auto regenerate
+	if (doAutogenerateTemplateSettingsOnChange){
+		btnGenerateTemplate();
+	}
+}
 
 function resetPasswordsRadioHandle(){
 	doChangeAuthMethod = false;
@@ -947,11 +994,17 @@ $(function()
 	btnResetPassword.click(btnResetPasswordClick);
 
 	// Convenience handlers
+	chkPassword.click(handleMethodRadio);
+	chkHotp.click(handleMethodRadio);
+
 	radResetHotp.click(handleResetRadio);
 	radResetPassword.click(handleResetRadio);
 
 	radLoginHotp.click(resetPasswordsRadioHandle);
 	radLoginPassword.click(resetPasswordsRadioHandle);
+
+	// Defaults
+	handleMethodRadio();
 
 	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
