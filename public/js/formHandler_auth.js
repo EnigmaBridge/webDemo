@@ -273,6 +273,7 @@ function btnGenerateTemplate(){
 		);
 
 	statusFieldSet(templateField, response, true);
+	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
 	templateGenerated = true;
 
@@ -869,6 +870,13 @@ function btnResetPasswordClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 // Misc
 // ---------------------------------------------------------------------------------------------------------------------
+function handleMethodRadio(){
+	// Auth system changed - reset generated template.
+	templateGenerated = false;
+	statusFieldSet(templateField, '');
+	setDisabled(fldRegUsername, true);
+	setDisabled(fldRegPassword, true);
+}
 
 function resetPasswordsRadioHandle(){
 	doChangeAuthMethod = false;
@@ -955,11 +963,17 @@ $(function()
 	btnResetPassword.click(btnResetPasswordClick);
 
 	// Convenience handlers
+	chkPassword.click(handleMethodRadio);
+	chkHotp.click(handleMethodRadio);
+
 	radResetHotp.click(handleResetRadio);
 	radResetPassword.click(handleResetRadio);
 
 	radLoginHotp.click(resetPasswordsRadioHandle);
 	radLoginPassword.click(resetPasswordsRadioHandle);
+
+	// Defaults
+	handleMethodRadio();
 
 	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
