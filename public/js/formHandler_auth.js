@@ -692,6 +692,12 @@ function btnChangePasswordClick(){
 	// Build request.
 	statusFieldSet(fldChangeStatus, '...');
 
+	// Is password method allowed for this user?
+	if (!record.isPassword){
+		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
+		return;
+	}
+
 	// Check current password
 	if (fldChangeCurrentPassword.val() != record.password){
 		statusFieldSet(fldChangeStatus, "Current password is invalid", false);
