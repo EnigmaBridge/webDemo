@@ -423,6 +423,10 @@ function createUserFinished(response){
 		// TODO: disable password change.
 	}
 
+	if (record.isPasswd && !record.isHotp){
+		radLoginPassword.click();
+	}
+
 	// Store this record to the local database.
 	userNameMap[uname] = record;
 }
@@ -468,7 +472,7 @@ function btnPasswordGenClick(correctOne){
 		doHotp = isChecked(radLoginHotp);
 	}
 
-	doChangeAuthMethod = true;
+	doChangeAuthMethod = record.isPasswd && record.isHotp;
 	if (!correctOne){
 		if (doHotp){
 			fldLoginPassword.val(sprintf("%06d", Math.floor(Math.random()*Math.pow(10, templateHotpDigits))));
@@ -477,6 +481,10 @@ function btnPasswordGenClick(correctOne){
 		}
 
 		return;
+	}
+
+	if (doHotp && !record.isHotp){
+		statusFieldSet(fldLoginResult, 'HOTP method not enabled for this user', false);
 	}
 
 	if (doHotp){
