@@ -280,9 +280,16 @@ function btnGenerateTemplate(){
 }
 
 function btnGenNameClick(){
+	if (!templateGenerated){
+		scrollToTarget('#step1');
+		return;
+	}
+
 	var name = names[Math.floor(Math.random()*names.length)];
 	fldRegUsername.val(name);
-	fldRegPassword.val(name);
+
+	// Is password enabled?
+	fldRegPassword.val(isChecked(chkPassword) ? name : '');
 }
 
 function btnCreateUserClick(){
