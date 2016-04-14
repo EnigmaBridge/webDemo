@@ -90,3 +90,11 @@ body.loading .modal {
 label + .radio, label + .checkbox {
     margin-top: -5px;
 }
+
+.col-sm-05 {
+    width: 4.16666667% !important;
+}
+
+.icon-md-inline {
+    display: inline !important;
+}
