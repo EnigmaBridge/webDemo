@@ -301,8 +301,6 @@ function btnCreateUserClick(){
 			throw new eb.exception.invalid("You must generate template first");
 		}
 
-		var authPasswd = isChecked(chkPassword);
-		var options = getTemplateSettings(fldRegPassword.val());
 		var reqSettings = $.extend(requestConfig, {
 			apiKeyLow4Bytes: 	svcSettings.createUser.uiod,
 			userObjectId:		svcSettings.createUser.uiod,
@@ -315,13 +313,9 @@ function btnCreateUserClick(){
 			btnGenNameClick();
 		}
 
-		// Set 'test' password if not set
-		var usrPasswd = fldRegPassword.val();
-		if (authPasswd && (usrPasswd === undefined || usrPasswd.length == 0)){
-			fldRegPassword.val('test');
-		}
-
+		var options = getTemplateSettings(fldRegPassword.val());
 		log("Create Auth context configuration: " + JSON.stringify(options));
+		
 		var request = new eb.comm.hotp.newHotpUserRequest({hotp:options});
 		request.configure(reqSettings);
 		request.logger = append_message;
