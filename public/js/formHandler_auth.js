@@ -76,6 +76,7 @@ authRecord.prototype = {
 var userNameMap = {};
 var templateGenerated = false;
 var doChangeAuthMethod = false;
+var doAutogenerateTemplateSettingsOnChange = false;
 
 /**
  * Global section with variables.
@@ -273,16 +274,25 @@ function btnGenerateTemplate(){
 		);
 
 	statusFieldSet(templateField, response, true);
+	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
 	templateGenerated = true;
+	doAutogenerateTemplateSettingsOnChange = true;
 
 	log("Template generated: " + response);
 }
 
 function btnGenNameClick(){
+	if (!templateGenerated){
+		scrollToTarget('#step1');
+		return;
+	}
+
 	var name = names[Math.floor(Math.random()*names.length)];
 	fldRegUsername.val(name);
-	fldRegPassword.val(name);
+
+	// Is password enabled?
+	fldRegPassword.val(isChecked(chkPassword) ? name : '');
 }
 
 function btnCreateUserClick(){
@@ -862,6 +872,18 @@ function btnResetPasswordClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 // Misc
 // ---------------------------------------------------------------------------------------------------------------------
+function handleMethodRadio(){
+	// Auth system changed - reset generated template.
+	templateGenerated = false;
+	statusFieldSet(templateField, '');
+	setDisabled(fldRegUsername, true);
+	setDisabled(fldRegPassword, true);
+
+	// Auto regenerate
+	if (doAutogenerateTemplateSettingsOnChange){
+		btnGenerateTemplate();
+	}
+}
 
 function resetPasswordsRadioHandle(){
 	doChangeAuthMethod = false;
@@ -948,11 +970,17 @@ $(function()
 	btnResetPassword.click(btnResetPasswordClick);
 
 	// Convenience handlers
+	chkPassword.click(handleMethodRadio);
+	chkHotp.click(handleMethodRadio);
+
 	radResetHotp.click(handleResetRadio);
 	radResetPassword.click(handleResetRadio);
 
 	radLoginHotp.click(resetPasswordsRadioHandle);
 	radLoginPassword.click(resetPasswordsRadioHandle);
+
+	// Defaults
+	handleMethodRadio();
 
 	// Default form validation, not used.
 	$("input,textarea").jqBootstrapValidation(
