@@ -311,6 +311,7 @@ function btnGenerateTemplate(){
 	statusFieldSet(templateField, response, true);
 	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
+	fldRegPassword.attr("placeholder", authPasswd ? "User password" : "Password not enabled");
 	templateGenerated = true;
 	doAutogenerateTemplateSettingsOnChange = true;
 
@@ -603,6 +604,7 @@ function btnLoginClick(){
 		var record = getUserRecord(uname);
 		if (!record) {
 			statusFieldSet(fldLoginResult, "User was not found", false);
+			scrollToIfNotVisible(fldLoginResult);
 			return;
 		}
 
@@ -666,6 +668,7 @@ function btnLoginClick(){
 	} catch(e){
 		log("Exception: " + e);
 		statusFieldSet(fldLoginResult, "Exception: " + e, false);
+		scrollToIfNotVisible(fldLoginResult);
 		throw e;
 	}
 }
@@ -675,7 +678,11 @@ function btnLoginClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 
 function getRandomPassword(){
-	return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
+	// Uses https://github.com/bermi/password-generator
+	return generatePassword();
+
+	// Old approach - just 4 digit code.
+	//return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
 }
 
 function btnChangeGenNewPasswordClick(){
@@ -738,6 +745,7 @@ function btnChangePasswordClick(){
 	var record = getUserRecord(uname);
 	if (!record){
 		statusFieldSet(fldChangeStatus, "User was not found", false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
@@ -747,12 +755,14 @@ function btnChangePasswordClick(){
 	// Is password method allowed for this user?
 	if (!record.isPasswd){
 		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
 	// Check current password
 	if (fldChangeCurrentPassword.val() != record.password){
 		statusFieldSet(fldChangeStatus, "Current password is invalid", false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
@@ -888,6 +898,7 @@ function btnResetPasswordClick(){
 	var record = getUserRecord(uname);
 	if (!record){
 		statusFieldSet(fldResetStatus, "User was not found", false);
+		scrollToIfNotVisible(fldResetStatus);
 		return;
 	}
 
