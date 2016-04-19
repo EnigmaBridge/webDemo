@@ -495,6 +495,7 @@ function btnPasswordGenClick(correctOne){
 	var record = getUserRecord(uname);
 	if (record === undefined){
 		statusFieldSet(fldLoginResult, 'User was not found', false);
+		scrollToIfNotVisible(fldLoginResult);
 		return;
 	}
 
