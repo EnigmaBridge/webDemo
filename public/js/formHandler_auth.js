@@ -604,6 +604,7 @@ function btnLoginClick(){
 		var record = getUserRecord(uname);
 		if (!record) {
 			statusFieldSet(fldLoginResult, "User was not found", false);
+			scrollToIfNotVisible(fldLoginResult);
 			return;
 		}
 
@@ -667,6 +668,7 @@ function btnLoginClick(){
 	} catch(e){
 		log("Exception: " + e);
 		statusFieldSet(fldLoginResult, "Exception: " + e, false);
+		scrollToIfNotVisible(fldLoginResult);
 		throw e;
 	}
 }
@@ -743,6 +745,7 @@ function btnChangePasswordClick(){
 	var record = getUserRecord(uname);
 	if (!record){
 		statusFieldSet(fldChangeStatus, "User was not found", false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
@@ -752,12 +755,14 @@ function btnChangePasswordClick(){
 	// Is password method allowed for this user?
 	if (!record.isPasswd){
 		statusFieldSet(fldChangeStatus, 'User does not have password enabled', false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
 	// Check current password
 	if (fldChangeCurrentPassword.val() != record.password){
 		statusFieldSet(fldChangeStatus, "Current password is invalid", false);
+		scrollToIfNotVisible(fldChangeStatus);
 		return;
 	}
 
@@ -893,6 +898,7 @@ function btnResetPasswordClick(){
 	var record = getUserRecord(uname);
 	if (!record){
 		statusFieldSet(fldResetStatus, "User was not found", false);
+		scrollToIfNotVisible(fldResetStatus);
 		return;
 	}
 
