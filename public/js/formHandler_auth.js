@@ -676,7 +676,11 @@ function btnLoginClick(){
 // ---------------------------------------------------------------------------------------------------------------------
 
 function getRandomPassword(){
-	return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
+	// Uses https://github.com/bermi/password-generator
+	return generatePassword();
+
+	// Old approach - just 4 digit code.
+	//return eb.misc.genChecksumValue(Math.floor(Math.random()*1000), 4);
 }
 
 function btnChangeGenNewPasswordClick(){
