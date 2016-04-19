@@ -311,6 +311,7 @@ function btnGenerateTemplate(){
 	statusFieldSet(templateField, response, true);
 	setDisabled(fldRegUsername, false);
 	setDisabled(fldRegPassword, !authPasswd);
+	fldRegPassword.attr("placeholder", authPasswd ? "User password" : "Password not enabled");
 	templateGenerated = true;
 	doAutogenerateTemplateSettingsOnChange = true;
 
